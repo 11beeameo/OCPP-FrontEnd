@@ -24,6 +24,13 @@ import ChargerDetailsPage from './pages/charger/ChargerDetailsPage';
 import ChargerCreatePage from './pages/charger/ChargerCreatePage';
 import ChargerEditPage from './pages/charger/ChargerEditPage';
 
+// Session pages
+import SessionsPage from './pages/session/SessionsPage';
+import SessionDetailsPage from './pages/session/SessionDetailsPage';
+
+// Charge Point pages
+import ChargePointsPage from './pages/chargepoint/ChargePointsPage';
+
 import ApiTest from './components/ApiTest'; // Keep for testing
 
 const queryClient = new QueryClient({
@@ -53,25 +60,31 @@ function App() {
             
             {/* Site routes */}
             <Route path="/sites" element={<SitesPage />} />
-           <Route path="/sites/new" element={<SiteStandaloneCreatePage />} />
-           <Route path="/sites/:id" element={<SiteDetailsPage />} />
-           <Route path="/sites/:id/edit" element={<SiteEditPage />} />
-           
-           {/* Charger routes */}
-           <Route path="/chargers" element={<ChargersPage />} />
-           <Route path="/sites/:siteId/chargers/new" element={<ChargerCreatePage />} />
-           <Route path="/chargers/:id" element={<ChargerDetailsPage />} />
-           <Route path="/chargers/:id/edit" element={<ChargerEditPage />} />
-           
-           {/* Test route */}
-           <Route path="/test" element={<ApiTest />} />
-         </Routes>
-       </Layout>
-     </Router>
-   </QueryClientProvider>
- );
+            <Route path="/sites/new" element={<SiteStandaloneCreatePage />} />
+            <Route path="/sites/:id" element={<SiteDetailsPage />} />
+            <Route path="/sites/:id/edit" element={<SiteEditPage />} />
+            
+            {/* Charger routes */}
+            <Route path="/chargers" element={<ChargersPage />} />
+            <Route path="/sites/:siteId/chargers/new" element={<ChargerCreatePage />} />
+            <Route path="/chargers/:id" element={<ChargerDetailsPage />} />
+            <Route path="/chargers/:id/edit" element={<ChargerEditPage />} />
+            
+            {/* Session routes */}
+            <Route path="/sessions" element={<SessionsPage />} />
+            <Route path="/sessions/:id" element={<SessionDetailsPage />} />
+            
+            {/* Charge Point routes */}
+            <Route path="/charge-points" element={<ChargePointsPage />} />
+            
+            {/* Test route */}
+            <Route path="/test" element={<ApiTest />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </QueryClientProvider>
+  );
 }
 
 export default App;
-            
-            
+

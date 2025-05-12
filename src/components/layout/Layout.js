@@ -7,6 +7,8 @@ import HomeIcon from '@mui/icons-material/Home';
 import BusinessIcon from '@mui/icons-material/Business';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import EvStationIcon from '@mui/icons-material/EvStation';
+import BoltIcon from '@mui/icons-material/Bolt';
+import PowerIcon from '@mui/icons-material/Power';
 
 const Layout = ({ children }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -64,6 +66,18 @@ const Layout = ({ children }) => {
                 <EvStationIcon />
               </ListItemIcon>
               <ListItemText primary="Chargers" />
+            </ListItem>
+            <ListItem component={Link} to="/sessions">
+              <ListItemIcon>
+                <BoltIcon />
+              </ListItemIcon>
+              <ListItemText primary="Sessions" />
+            </ListItem>
+            <ListItem component={Link} to="/charge-points">
+              <ListItemIcon>
+                <PowerIcon />
+              </ListItemIcon>
+              <ListItemText primary="Charge Points" />
             </ListItem>
           </List>
         </Box>

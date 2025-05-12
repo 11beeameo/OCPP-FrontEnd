@@ -44,8 +44,12 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { getCharger, deleteCharger } from '../../api/chargerAPI';
 import { getCompany } from '../../api/companyAPI';
 import { getSite } from '../../api/siteAPI';
+import { getChargerSessions } from '../../api/sessionAPI';
 import LoadingSpinner from '../../components/common/Loadingspinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
+import SessionList from '../../components/session/SessionList';
+import ChargePointStatus from '../../components/charger/ChargePointStatus';
+import ChargePointControl from '../../components/charger/ChargePointControl';
 
 const ChargerDetailsPage = () => {
   const { id } = useParams();
@@ -82,6 +86,18 @@ const ChargerDetailsPage = () => {
     queryKey: ['site', siteId],
     queryFn: () => getSite(siteId),
     enabled: !!siteId && !isNaN(siteId)
+  });
+
+  // Fetch charger sessions
+  const { 
+    data: sessions, 
+    isLoading: isLoadingSessions, 
+    isError: isSessionsError, 
+    error: sessionsError 
+  } = useQuery({
+    queryKey: ['charger-sessions', chargerId, companyId, siteId],
+    queryFn: () => getChargerSessions(chargerId, companyId, siteId),
+    enabled: !!chargerId && !!companyId && !!siteId && !isNaN(chargerId) && !isNaN(companyId) && !isNaN(siteId)
   });
 
   // Delete charger mutation
@@ -307,155 +323,190 @@ const ChargerDetailsPage = () => {
                     <ListItemText 
                       primary="WebSocket URL" 
                       secondary={charger.ChargerWsURL}
-                      />
-                 </ListItem>
-               )}
-               
-               {charger.ChargerICCID && (
-                 <ListItem>
-                   <ListItemText 
-                     primary="ICCID" 
-                     secondary={charger.ChargerICCID} 
-                   />
-                 </ListItem>
-               )}
-               
-               {(charger.ChargerLastConn || charger.ChargerLastHeartbeat) && (
-                 <ListItem>
-                   <ListItemText 
-                     primary="Connection Status" 
-                     secondary={
-                       <>
-                         {charger.ChargerLastConn && (
-                           <Typography variant="body2">
-                             Last Connection: {new Date(charger.ChargerLastConn).toLocaleString()}
-                           </Typography>
-                         )}
-                         {charger.ChargerLastHeartbeat && (
-                           <Typography variant="body2">
-                             Last Heartbeat: {new Date(charger.ChargerLastHeartbeat).toLocaleString()}
-                           </Typography>
-                         )}
-                       </>
-                     } 
-                   />
-                 </ListItem>
-               )}
-             </List>
-           </Box>
-           
-           <Box mb={3}>
-             <Typography variant="h6" gutterBottom>Availability</Typography>
-             <List dense disablePadding>
-               <ListItem>
-                 <ListItemText 
-                   primary="24/7 Operation" 
-                   secondary={charger.ChargerActive24x7 ? "Yes" : "No"} 
-                 />
-               </ListItem>
-               
-               {charger.ChargerAvailability && (
-                 <ListItem>
-                   <ListItemText 
-                     primary="Availability Schedule" 
-                     secondary={charger.ChargerAvailability} 
-                   />
-                 </ListItem>
-               )}
-             </List>
-           </Box>
-           
-           <Box mb={3}>
-             <Typography variant="h6" gutterBottom>Location Information</Typography>
-             <List dense disablePadding>
-               <ListItem>
-                 <ListItemIcon>
-                   <BusinessIcon />
-                 </ListItemIcon>
-                 <ListItemText 
-                   primary="Company" 
-                   secondary={company ? company.CompanyName : 'Unknown'} 
-                 />
-               </ListItem>
-               
-               <ListItem>
-                 <ListItemIcon>
-                   <LocationOnIcon />
-                 </ListItemIcon>
-                 <ListItemText 
-                   primary="Site" 
-                   secondary={site ? site.SiteName : 'Unknown'} 
-                 />
-               </ListItem>
-               
-               {charger.ChargerGeoCoord && (
-                 <ListItem>
-                   <ListItemText 
-                     primary="Geo Coordinates" 
-                     secondary={charger.ChargerGeoCoord} 
-                   />
-                 </ListItem>
-               )}
-             </List>
-           </Box>
-         </Grid>
-       </Grid>
-       
-       <Divider sx={{ my: 3 }} />
-       
-       <Box display="flex" justifyContent="flex-end" gap={2}>
-         <Button
-           variant="outlined"
-           color="primary"
-           startIcon={<EditIcon />}
-           component={RouterLink}
-           to={`/chargers/${charger.ChargerId}/edit?company=${companyId}&site=${siteId}`}
-         >
-           Edit
-         </Button>
-         <Button
-           variant="outlined"
-           color="error"
-           startIcon={<DeleteIcon />}
-           onClick={handleDeleteClick}
-         >
-           Delete
-         </Button>
-       </Box>
-     </Paper>
+                    />
+                  </ListItem>
+                )}
+                
+                {charger.ChargerICCID && (
+                  <ListItem>
+                    <ListItemText 
+                      primary="ICCID" 
+                      secondary={charger.ChargerICCID} 
+                    />
+                  </ListItem>
+                )}
+                
+                {(charger.ChargerLastConn || charger.ChargerLastHeartbeat) && (
+                  <ListItem>
+                    <ListItemText 
+                      primary="Connection Status" 
+                      secondary={
+                        <>
+                          {charger.ChargerLastConn && (
+                            <Typography variant="body2">
+                              Last Connection: {new Date(charger.ChargerLastConn).toLocaleString()}
+                            </Typography>
+                          )}
+                          {charger.ChargerLastHeartbeat && (
+                            <Typography variant="body2">
+                              Last Heartbeat: {new Date(charger.ChargerLastHeartbeat).toLocaleString()}
+                            </Typography>
+                          )}
+                        </>
+                      } 
+                    />
+                  </ListItem>
+                )}
+              </List>
+            </Box>
+            
+            <Box mb={3}>
+              <Typography variant="h6" gutterBottom>Availability</Typography>
+              <List dense disablePadding>
+                <ListItem>
+                  <ListItemText 
+                    primary="24/7 Operation" 
+                    secondary={charger.ChargerActive24x7 ? "Yes" : "No"} 
+                  />
+                </ListItem>
+                
+                {charger.ChargerAvailability && (
+                  <ListItem>
+                    <ListItemText 
+                      primary="Availability Schedule" 
+                      secondary={charger.ChargerAvailability} 
+                    />
+                  </ListItem>
+                )}
+              </List>
+            </Box>
+            
+            <Box mb={3}>
+              <Typography variant="h6" gutterBottom>Location Information</Typography>
+              <List dense disablePadding>
+                <ListItem>
+                  <ListItemIcon>
+                    <BusinessIcon />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Company" 
+                    secondary={company ? company.CompanyName : 'Unknown'} 
+                  />
+                </ListItem>
+                
+                <ListItem>
+                  <ListItemIcon>
+                    <LocationOnIcon />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Site" 
+                    secondary={site ? site.SiteName : 'Unknown'} 
+                  />
+                </ListItem>
+                
+                {charger.ChargerGeoCoord && (
+                  <ListItem>
+                    <ListItemText 
+                      primary="Geo Coordinates" 
+                      secondary={charger.ChargerGeoCoord} 
+                    />
+                  </ListItem>
+                )}
+              </List>
+            </Box>
+          </Grid>
+        </Grid>
+        
+        <Divider sx={{ my: 3 }} />
+        
+        <Box display="flex" justifyContent="flex-end" gap={2}>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<EditIcon />}
+            component={RouterLink}
+            to={`/chargers/${charger.ChargerId}/edit?company=${companyId}&site=${siteId}`}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<DeleteIcon />}
+            onClick={handleDeleteClick}
+          >
+            Delete
+          </Button>
+        </Box>
+      </Paper>
 
-     {/* Delete Confirmation Dialog */}
-     <Dialog
-       open={deleteDialogOpen}
-       onClose={() => setDeleteDialogOpen(false)}
-     >
-       <DialogTitle>Delete Charger</DialogTitle>
-       <DialogContent>
-         <DialogContentText>
-           Are you sure you want to delete "{charger.ChargerName}"? This action cannot be undone.
-         </DialogContentText>
-       </DialogContent>
-       <DialogActions>
-         <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-         <Button onClick={handleDeleteConfirm} color="error" autoFocus>
-           Delete
-         </Button>
-       </DialogActions>
-     </Dialog>
+      {/* WebSocket Connection Status */}
+      <ChargePointStatus 
+        chargePointId={charger.ChargerName} 
+        chargerName={charger.ChargerName}
+      />
 
-     {/* Snackbar for notifications */}
-     <Snackbar 
-       open={snackbar.open} 
-       autoHideDuration={6000} 
-       onClose={handleCloseSnackbar}
-       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-     >
-       <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
-         {snackbar.message}
-       </Alert>
-     </Snackbar>
-   </Box>
- );
+      {/* Charge Point Control */}
+      <ChargePointControl 
+        chargePointId={charger.ChargerName}
+        isOnline={charger.ChargerIsOnline}
+        sessions={sessions}
+      />
+
+      {/* Charging Sessions Section */}
+      <Box mt={4}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Typography variant="h5">Charging Sessions</Typography>
+          <Button 
+            component={RouterLink} 
+            to={`/sessions?charger=${chargerId}&company=${companyId}&site=${siteId}`}
+            variant="outlined"
+          >
+            View All Sessions
+          </Button>
+        </Box>
+        
+        <SessionList 
+          sessions={sessions}
+          isLoading={isLoadingSessions}
+          isError={isSessionsError}
+          error={sessionsError}
+          showCharger={false}
+        />
+      </Box>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Delete Charger</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete "{charger.ChargerName}"? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
 };
 
 export default ChargerDetailsPage;

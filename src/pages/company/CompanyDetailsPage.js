@@ -18,11 +18,22 @@ import {
     DialogContentText,
     DialogTitle,
     Snackbar,
-    Alert
+    Alert,
+    CardMedia,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableRow
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import BusinessIcon from '@mui/icons-material/Business';
+import PaletteIcon from '@mui/icons-material/Palette';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import UpdateIcon from '@mui/icons-material/Update';
+import ImageIcon from '@mui/icons-material/Image';
 import { getCompany, deleteCompany } from '../../api/companyAPI';
 import { getCompanySites, deleteSite } from '../../api/siteAPI';
 import LoadingSpinner from '../../components/common/Loadingspinner';
@@ -101,19 +112,7 @@ const CompanyDetailsPage = () => {
         }
         setDeleteDialogOpen(false);
     };
-    /*
-      const handleDeleteSite = (siteId) => {
-        // We'll implement site deletion in another step
-        console.log(`Delete site ${siteId}`);
-        // For now, just show a message
-        setSnackbar({
-          open: true,
-          message: 'Site deletion will be implemented in the next step',
-          severity: 'info'
-        });
-      };*/
 
-    // Then update the handleDeleteSite function within the component
     const handleDeleteSite = async (siteId) => {
         try {
             await deleteSite(siteId);
@@ -161,105 +160,26 @@ const CompanyDetailsPage = () => {
                     </Breadcrumbs>
                     <Typography variant="h4">{company.CompanyName}</Typography>
                 </div>
-
-                <Button
-                    component={RouterLink}
-                    to="/companies"
+                
+                <Button 
+                    component={RouterLink} 
+                    to="/companies" 
                     startIcon={<ArrowBackIcon />}
                 >
                     Back to Companies
                 </Button>
             </Box>
 
+            {/* Company Details Card with Single Row Layout */}
             <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-                <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                        <Box mb={2}>
-                            <Typography variant="subtitle2" color="text.secondary">Company ID</Typography>
-                            <Typography variant="body1">{company.CompanyId}</Typography>
-                        </Box>
-
-                        <Box mb={2}>
-                            <Typography variant="subtitle2" color="text.secondary">Status</Typography>
-                            <Chip
-                                label={company.CompanyEnabled ? "Active" : "Inactive"}
-                                color={company.CompanyEnabled ? "success" : "default"}
-                            />
-                        </Box>
-
-                        <Box mb={2}>
-                            <Typography variant="subtitle2" color="text.secondary">Created At</Typography>
-                            <Typography variant="body1">
-                                {new Date(company.CompanyCreated).toLocaleString()}
-                            </Typography>
-                        </Box>
-
-                        <Box mb={2}>
-                            <Typography variant="subtitle2" color="text.secondary">Last Updated</Typography>
-                            <Typography variant="body1">
-                                {new Date(company.CompanyUpdated).toLocaleString()}
-                            </Typography>
-                        </Box>
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
-                        {company.CompanyBrandColour && (
-                            <Box mb={2}>
-                                <Typography variant="subtitle2" color="text.secondary">Brand Color</Typography>
-                                <Box display="flex" alignItems="center">
-                                    <Box
-                                        sx={{
-                                            width: 30,
-                                            height: 30,
-                                            bgcolor: company.CompanyBrandColour,
-                                            borderRadius: 1,
-                                            mr: 1,
-                                            border: '1px solid #ccc'
-                                        }}
-                                    />
-                                    <Typography variant="body1">{company.CompanyBrandColour}</Typography>
-                                </Box>
-                            </Box>
-                        )}
-
-                        {company.CompanyHomePhoto && (
-                            <Box mb={2}>
-                                <Typography variant="subtitle2" color="text.secondary">Home Photo URL</Typography>
-                                <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
-                                    {company.CompanyHomePhoto}
-                                </Typography>
-                            </Box>
-                        )}
-
-                        {company.CompanyBrandLogo && (
-                            <Box mb={2}>
-                                <Typography variant="subtitle2" color="text.secondary">Brand Logo URL</Typography>
-                                <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
-                                    {company.CompanyBrandLogo}
-                                </Typography>
-                            </Box>
-                        )}
-
-                        {company.CompanyBrandFavicon && (
-                            <Box mb={2}>
-                                <Typography variant="subtitle2" color="text.secondary">Brand Favicon URL</Typography>
-                                <Typography variant="body1" sx={{ wordBreak: 'break-all' }}>
-                                    {company.CompanyBrandFavicon}
-                                </Typography>
-                            </Box>
-                        )}
-                    </Grid>
-                </Grid>
-
-                <Divider sx={{ my: 3 }} />
-
-                <Box display="flex" justifyContent="flex-end" gap={2}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
                     <Button
                         variant="outlined"
                         color="primary"
                         startIcon={<EditIcon />}
                         component={RouterLink}
                         to={`/companies/${company.CompanyId}/edit`}
+                        sx={{ mr: 1 }}
                     >
                         Edit
                     </Button>
@@ -272,6 +192,117 @@ const CompanyDetailsPage = () => {
                         Delete
                     </Button>
                 </Box>
+                
+                <Divider sx={{ mb: 2 }} />
+                
+                {/* Single Row Layout Table */}
+                <TableContainer component={Paper} elevation={0}>
+                    <Table sx={{ minWidth: 650 }} aria-label="company details">
+                        <TableBody>
+                            <TableRow>
+                                <TableCell component="th" scope="row" width="20%">
+                                    <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <BusinessIcon sx={{ mr: 1 }} fontSize="small" />
+                                        Company Name
+                                    </Typography>
+                                </TableCell>
+                                <TableCell width="30%">
+                                    <Typography variant="body1">{company.CompanyName}</Typography>
+                                </TableCell>
+                                <TableCell width="20%">
+                                    <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <AccessTimeIcon sx={{ mr: 1 }} fontSize="small" />
+                                        Created On
+                                    </Typography>
+                                </TableCell>
+                                <TableCell width="30%">
+                                    <Typography variant="body1">
+                                        {new Date(company.CompanyCreated).toLocaleString()}
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                            
+                            <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                <TableCell component="th" scope="row">
+                                    <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center' }}>
+                                        Status
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Chip
+                                        label={company.CompanyEnabled ? "Enabled" : "Disabled"}
+                                        color={company.CompanyEnabled ? "success" : "default"}
+                                        size="small"
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <UpdateIcon sx={{ mr: 1 }} fontSize="small" />
+                                        Last Updated
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography variant="body1">
+                                        {new Date(company.CompanyUpdated).toLocaleString()}
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                            
+                            <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                <TableCell component="th" scope="row">
+                                    <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <PaletteIcon sx={{ mr: 1 }} fontSize="small" />
+                                        Brand Color
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    <Box display="flex" alignItems="center">
+                                        {company.CompanyBrandColour ? (
+                                            <>
+                                                <Box 
+                                                    sx={{ 
+                                                        width: 20, 
+                                                        height: 20, 
+                                                        borderRadius: '50%', 
+                                                        bgcolor: company.CompanyBrandColour,
+                                                        border: '1px solid #ddd',
+                                                        mr: 1
+                                                    }} 
+                                                />
+                                                <Typography variant="body1">{company.CompanyBrandColour}</Typography>
+                                            </>
+                                        ) : (
+                                            <Typography variant="body1">Not set</Typography>
+                                        )}
+                                    </Box>
+                                </TableCell>
+                                <TableCell>
+                                    <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <ImageIcon sx={{ mr: 1 }} fontSize="small" />
+                                        Brand Logo
+                                    </Typography>
+                                </TableCell>
+                                <TableCell>
+                                    {company.CompanyBrandLogo ? (
+                                        <CardMedia
+                                            component="img"
+                                            sx={{ 
+                                                height: 40, 
+                                                width: 'auto', 
+                                                maxWidth: 150,
+                                                objectFit: 'contain'
+                                            }}
+                                            image={company.CompanyBrandLogo}
+                                            alt={`${company.CompanyName} logo`}
+                                        />
+                                    ) : (
+                                        <Typography variant="body1">Not set</Typography>
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </Paper>
 
             {/* Sites List Section */}

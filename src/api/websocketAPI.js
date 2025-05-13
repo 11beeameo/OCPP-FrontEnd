@@ -6,10 +6,13 @@ const WEBSOCKET_URL = '/api/v1/cs/';
 // Get all connected charge points
 export const getChargePoints = async () => {
   try {
+    console.log("Calling getChargePoints API");
     const response = await apiClient.get(`${WEBSOCKET_URL}charge_points`);
+    console.log("Charge points response:", response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching charge points:', error);
+    console.error('Error details:', error.response?.data || 'No response data');
     throw error;
   }
 };

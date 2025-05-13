@@ -1,5 +1,5 @@
 // src/pages/site/SitesPage.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Box, 
@@ -32,7 +32,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import BusinessIcon from '@mui/icons-material/Business';
 import SearchIcon from '@mui/icons-material/Search';
-import { getSites, deleteSite } from '../../api/siteAPI';
+import { getSites, deleteSite, getCompanySites } from '../../api/siteAPI';
 import { getCompanies } from '../../api/companyAPI';
 import LoadingSpinner from '../../components/common/Loadingspinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
@@ -52,19 +52,41 @@ const SitesPage = () => {
     search: ''
   });
 
-  // Fetch all sites
-  const { data: sites, isLoading: isLoadingSites, isError: isSitesError, error: sitesError } = useQuery({
-    queryKey: ['sites', filters],
-    queryFn: () => getSites(
-      filters.companyId ? parseInt(filters.companyId) : undefined, 
-      filters.enabled !== '' ? filters.enabled === 'true' : undefined
-    )
-  });
-
   // Fetch all companies for the filter dropdown
   const { data: companies, isLoading: isLoadingCompanies } = useQuery({
     queryKey: ['companies'],
     queryFn: () => getCompanies()
+  });
+
+  // Set default company ID when companies are loaded
+  useEffect(() => {
+    if (companies && companies.length > 0 && !filters.companyId) {
+      setFilters(prev => ({
+        ...prev,
+        companyId: companies[0].CompanyId.toString()
+      }));
+    }
+  }, [companies]);
+
+  // Fetch sites using company-specific endpoint
+  const { data: sites, isLoading: isLoadingSites, isError: isSitesError, error: sitesError } = useQuery({
+    queryKey: ['sites', filters],
+    queryFn: () => {
+      if (filters.companyId) {
+        return getCompanySites(
+          parseInt(filters.companyId),
+          filters.enabled !== '' ? filters.enabled === 'true' : undefined
+        );
+      } else if (companies && companies.length > 0) {
+        // No company selected but companies exist, use the first company
+        return getCompanySites(
+          companies[0].CompanyId,
+          filters.enabled !== '' ? filters.enabled === 'true' : undefined
+        );
+      }
+      return [];
+    },
+    enabled: !isLoadingCompanies && (!!filters.companyId || (companies && companies.length > 0))
   });
 
   // Delete site mutation
@@ -132,13 +154,17 @@ const SitesPage = () => {
     );
   });
 
-  if (isLoadingSites) {
+  if (isLoadingSites || isLoadingCompanies) {
     return <LoadingSpinner />;
   }
 
   if (isSitesError) {
     return <ErrorAlert message={sitesError instanceof Error ? sitesError.message : 'Failed to load sites'} />;
   }
+
+  // Find the current company name
+  const currentCompany = companies?.find(company => company.CompanyId.toString() === filters.companyId);
+  const currentCompanyName = currentCompany?.CompanyName || "Unknown Company";
 
   return (
     <Box>
@@ -154,7 +180,7 @@ const SitesPage = () => {
         </Button>
       </Box>
 
-      {/* Filters */}
+      {/* Filters - with equal-sized filter boxes */}
       <Box mb={4} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} md={4}>
@@ -172,16 +198,17 @@ const SitesPage = () => {
                   </InputAdornment>
                 ),
               }}
+              sx={{ height: '100%' }}
             />
           </Grid>
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth>
-              <InputLabel id="company-filter-label">Filter by Company</InputLabel>
+            <FormControl fullWidth sx={{ height: '100%' }}>
+              <InputLabel id="company-filter-label">Company</InputLabel>
               <Select
                 labelId="company-filter-label"
                 name="companyId"
                 value={filters.companyId}
-                label="Filter by Company"
+                label="Company"
                 onChange={handleFilterChange}
                 startAdornment={
                   <InputAdornment position="start">
@@ -189,9 +216,9 @@ const SitesPage = () => {
                   </InputAdornment>
                 }
               >
-                <MenuItem value="">All Companies</MenuItem>
+                {/* No "All Companies" option as requested */}
                 {!isLoadingCompanies && companies && companies.map((company) => (
-                  <MenuItem key={company.CompanyId} value={company.CompanyId}>
+                  <MenuItem key={company.CompanyId} value={company.CompanyId.toString()}>
                     {company.CompanyName}
                   </MenuItem>
                 ))}
@@ -199,13 +226,13 @@ const SitesPage = () => {
             </FormControl>
           </Grid>
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth>
-              <InputLabel id="status-filter-label">Filter by Status</InputLabel>
+            <FormControl fullWidth sx={{ height: '100%' }}>
+              <InputLabel id="status-filter-label">Status</InputLabel>
               <Select
                 labelId="status-filter-label"
                 name="enabled"
                 value={filters.enabled}
-                label="Filter by Status"
+                label="Status"
                 onChange={handleFilterChange}
               >
                 <MenuItem value="">All Statuses</MenuItem>
@@ -217,6 +244,13 @@ const SitesPage = () => {
         </Grid>
       </Box>
 
+      {/* Company information display */}
+      <Box mb={3}>
+        <Typography variant="h6">
+          Sites for: {currentCompanyName}
+        </Typography>
+      </Box>
+
       {filteredSites && filteredSites.length === 0 ? (
         <Box textAlign="center" py={4}>
           <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -224,7 +258,7 @@ const SitesPage = () => {
           </Typography>
           <Button 
             component={Link} 
-            to="/sites/new" 
+            to={`/companies/${filters.companyId}/sites/new`}
             variant="contained" 
             startIcon={<AddIcon />}
             sx={{ mt: 2 }}

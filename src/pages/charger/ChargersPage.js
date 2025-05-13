@@ -1,9 +1,10 @@
 // src/pages/charger/ChargersPage.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Box, 
   Typography, 
+  Button, 
   Grid, 
   Card, 
   CardContent, 
@@ -21,22 +22,22 @@ import {
   Select,
   MenuItem,
   TextField,
-  InputAdornment,
-  Button
+  InputAdornment
 } from '@mui/material';
 import { Link } from 'react-router-dom';
+import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import EvStationIcon from '@mui/icons-material/EvStation';
-import BusinessIcon from '@mui/icons-material/Business';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import BusinessIcon from '@mui/icons-material/Business';
 import SearchIcon from '@mui/icons-material/Search';
 import SignalWifi4BarIcon from '@mui/icons-material/SignalWifi4Bar';
 import SignalWifiOffIcon from '@mui/icons-material/SignalWifiOff';
-import { getChargers, deleteCharger } from '../../api/chargerAPI';
+import EvStationIcon from '@mui/icons-material/EvStation';
+import { getChargers, deleteCharger, getSiteChargers } from '../../api/chargerAPI';
 import { getCompanies } from '../../api/companyAPI';
-import { getSites } from '../../api/siteAPI';
+import { getSites, getCompanySites } from '../../api/siteAPI';
 import LoadingSpinner from '../../components/common/Loadingspinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 
@@ -63,24 +64,63 @@ const ChargersPage = () => {
     queryFn: () => getCompanies()
   });
 
+  // Set default company ID when companies are loaded
+  useEffect(() => {
+    if (companies && companies.length > 0 && !filters.companyId) {
+      setFilters(prev => ({
+        ...prev,
+        companyId: companies[0].CompanyId.toString()
+      }));
+    }
+  }, [companies]);
+
   // Fetch sites based on selected company
   const { data: sites, isLoading: isLoadingSites } = useQuery({
     queryKey: ['sites', filters.companyId],
-    queryFn: () => getSites(
-      filters.companyId ? parseInt(filters.companyId) : undefined
-    ),
-    enabled: filters.companyId !== ''
+    queryFn: () => {
+      if (filters.companyId) {
+        return getCompanySites(parseInt(filters.companyId));
+      }
+      return [];
+    },
+    enabled: !!filters.companyId && !isLoadingCompanies
   });
 
-  // Fetch all chargers with filters
+  // Set default site ID when sites are loaded
+  useEffect(() => {
+    if (sites && sites.length > 0 && !filters.siteId && filters.companyId) {
+      setFilters(prev => ({
+        ...prev,
+        siteId: sites[0].SiteId.toString()
+      }));
+    }
+  }, [sites, filters.companyId]);
+
+  // Fetch chargers using site-specific endpoint
   const { data: chargers, isLoading, isError, error } = useQuery({
     queryKey: ['chargers', filters],
-    queryFn: () => getChargers({
-      company_id: filters.companyId ? parseInt(filters.companyId) : undefined,
-      site_id: filters.siteId ? parseInt(filters.siteId) : undefined,
-      enabled: filters.enabled !== '' ? filters.enabled === 'true' : undefined,
-      online: filters.online !== '' ? filters.online === 'true' : undefined
-    })
+    queryFn: () => {
+      if (filters.companyId && filters.siteId) {
+        return getSiteChargers(
+          parseInt(filters.siteId),
+          parseInt(filters.companyId),
+          filters.enabled !== '' ? filters.enabled === 'true' : undefined
+        );
+      } else if (companies && companies.length > 0 && sites && sites.length > 0) {
+        // Use default values if not selected
+        const defaultCompanyId = parseInt(filters.companyId || companies[0].CompanyId);
+        const defaultSiteId = parseInt(filters.siteId || sites[0].SiteId);
+        return getSiteChargers(
+          defaultSiteId,
+          defaultCompanyId,
+          filters.enabled !== '' ? filters.enabled === 'true' : undefined
+        );
+      }
+      return [];
+    },
+    enabled: !isLoadingCompanies && !isLoadingSites && 
+             ((!!filters.companyId && !!filters.siteId) || 
+             (companies?.length > 0 && sites?.length > 0))
   });
 
   // Delete charger mutation
@@ -168,20 +208,14 @@ const ChargersPage = () => {
     );
   });
 
-  // Find company and site names for each charger
-  const getCompanyName = (companyId) => {
-    if (!companies) return 'Unknown';
-    const company = companies.find(c => c.CompanyId === companyId);
-    return company ? company.CompanyName : 'Unknown';
-  };
+  // Find the current company and site names
+  const currentCompany = companies?.find(company => company.CompanyId.toString() === filters.companyId);
+  const currentSite = sites?.find(site => site.SiteId.toString() === filters.siteId);
+  
+  const currentCompanyName = currentCompany?.CompanyName || "Unknown Company";
+  const currentSiteName = currentSite?.SiteName || "Unknown Site";
 
-  const getSiteName = (siteId, companyId) => {
-    if (!sites || parseInt(filters.companyId) !== companyId) return 'Unknown';
-    const site = sites.find(s => s.SiteId === siteId);
-    return site ? site.SiteName : 'Unknown';
-  };
-
-  if (isLoading) {
+  if (isLoading || isLoadingCompanies || isLoadingSites) {
     return <LoadingSpinner />;
   }
 
@@ -198,7 +232,7 @@ const ChargersPage = () => {
       {/* Filters */}
       <Box mb={4} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={3}>
+          <Grid item xs={12} md={4}>
             <TextField
               name="search"
               label="Search Chargers"
@@ -213,17 +247,18 @@ const ChargersPage = () => {
                   </InputAdornment>
                 ),
               }}
+              sx={{ height: '100%' }}
             />
           </Grid>
           
-          <Grid item xs={12} md={3}>
-            <FormControl fullWidth>
-              <InputLabel id="company-filter-label">Filter by Company</InputLabel>
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth sx={{ height: '100%' }}>
+              <InputLabel id="company-filter-label">Company</InputLabel>
               <Select
                 labelId="company-filter-label"
                 name="companyId"
                 value={filters.companyId}
-                label="Filter by Company"
+                label="Company"
                 onChange={handleFilterChange}
                 startAdornment={
                   <InputAdornment position="start">
@@ -231,7 +266,6 @@ const ChargersPage = () => {
                   </InputAdornment>
                 }
               >
-                <MenuItem value="">All Companies</MenuItem>
                 {!isLoadingCompanies && companies && companies.map((company) => (
                   <MenuItem key={company.CompanyId} value={company.CompanyId.toString()}>
                     {company.CompanyName}
@@ -241,23 +275,22 @@ const ChargersPage = () => {
             </FormControl>
           </Grid>
           
-          <Grid item xs={12} md={2}>
-            <FormControl fullWidth>
-              <InputLabel id="site-filter-label">Filter by Site</InputLabel>
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth sx={{ height: '100%' }}>
+              <InputLabel id="site-filter-label">Site</InputLabel>
               <Select
                 labelId="site-filter-label"
                 name="siteId"
                 value={filters.siteId}
-                label="Filter by Site"
+                label="Site"
                 onChange={handleFilterChange}
-                disabled={!filters.companyId}
+                disabled={!filters.companyId || isLoadingSites || !sites?.length}
                 startAdornment={
                   <InputAdornment position="start">
                     <LocationOnIcon />
                   </InputAdornment>
                 }
               >
-                <MenuItem value="">All Sites</MenuItem>
                 {!isLoadingSites && sites && sites.map((site) => (
                   <MenuItem key={site.SiteId} value={site.SiteId.toString()}>
                     {site.SiteName}
@@ -267,8 +300,8 @@ const ChargersPage = () => {
             </FormControl>
           </Grid>
           
-          <Grid item xs={12} md={2}>
-            <FormControl fullWidth>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth sx={{ height: '100%' }}>
               <InputLabel id="status-filter-label">Status</InputLabel>
               <Select
                 labelId="status-filter-label"
@@ -284,8 +317,8 @@ const ChargersPage = () => {
             </FormControl>
           </Grid>
           
-          <Grid item xs={12} md={2}>
-            <FormControl fullWidth>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth sx={{ height: '100%' }}>
               <InputLabel id="online-filter-label">Connection</InputLabel>
               <Select
                 labelId="online-filter-label"
@@ -303,11 +336,29 @@ const ChargersPage = () => {
         </Grid>
       </Box>
 
+      {/* Company and Site information display */}
+      <Box mb={3}>
+        <Typography variant="h6">
+          Chargers for: {currentCompanyName} / {currentSiteName}
+        </Typography>
+      </Box>
+
       {filteredChargers && filteredChargers.length === 0 ? (
         <Box textAlign="center" py={4}>
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No chargers found
           </Typography>
+          {filters.companyId && filters.siteId && (
+            <Button 
+              component={Link} 
+              to={`/sites/${filters.siteId}/chargers/new?company=${filters.companyId}`}
+              variant="contained" 
+              startIcon={<AddIcon />}
+              sx={{ mt: 2 }}
+            >
+              Add Your First Charger
+            </Button>
+          )}
         </Box>
       ) : (
         <Grid container spacing={3}>
@@ -356,14 +407,14 @@ const ChargersPage = () => {
                     <Box display="flex" alignItems="center" mb={0.5}>
                       <BusinessIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
                       <Typography variant="body2" color="text.secondary">
-                        {getCompanyName(charger.ChargerCompanyId)}
+                        {currentCompanyName}
                       </Typography>
                     </Box>
                     
                     <Box display="flex" alignItems="center">
                       <LocationOnIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
                       <Typography variant="body2" color="text.secondary">
-                        {getSiteName(charger.ChargerSiteId, charger.ChargerCompanyId)}
+                        {currentSiteName}
                       </Typography>
                     </Box>
                   </Box>

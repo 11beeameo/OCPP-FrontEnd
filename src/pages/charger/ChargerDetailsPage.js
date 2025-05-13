@@ -1,4 +1,4 @@
-// src/pages/charger/ChargerDetailsPage.js
+// src/pages/charger/ChargerDetailsPage.js with WebSocket Connection Status section removed
 import React, { useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,17 +18,7 @@ import {
   DialogContentText,
   DialogTitle,
   Snackbar,
-  Alert,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow
+  Alert
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -48,7 +38,6 @@ import { getChargerSessions } from '../../api/sessionAPI';
 import LoadingSpinner from '../../components/common/Loadingspinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 import SessionList from '../../components/session/SessionList';
-import ChargePointStatus from '../../components/charger/ChargePointStatus';
 import ChargePointControl from '../../components/charger/ChargePointControl';
 
 const ChargerDetailsPage = () => {
@@ -196,230 +185,7 @@ const ChargerDetailsPage = () => {
       </Box>
 
       <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Box mb={3}>
-              <Typography variant="h6" gutterBottom>Basic Information</Typography>
-              <List dense disablePadding>
-                <ListItem>
-                  <ListItemIcon>
-                    <EvStationIcon />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary="Charger ID" 
-                    secondary={charger.ChargerId} 
-                  />
-                </ListItem>
-                
-                <ListItem>
-                  <ListItemText 
-                    primary="Status" 
-                    secondary={
-                      <Box>
-                        <Chip 
-                          label={charger.ChargerEnabled ? "Enabled" : "Disabled"} 
-                          color={charger.ChargerEnabled ? "success" : "default"}
-                          size="small"
-                          sx={{ mr: 1, mt: 0.5 }}
-                        />
-                        <Chip 
-                          label={charger.ChargerIsOnline ? "Online" : "Offline"} 
-                          color={charger.ChargerIsOnline ? "success" : "default"}
-                          size="small"
-                          sx={{ mt: 0.5 }}
-                          icon={charger.ChargerIsOnline ? <SignalWifi4BarIcon /> : <SignalWifiOffIcon />}
-                        />
-                      </Box>
-                    } 
-                  />
-                </ListItem>
-                
-                {charger.ChargerType && (
-                  <ListItem>
-                    <ListItemText 
-                      primary="Type" 
-                      secondary={charger.ChargerType} 
-                    />
-                  </ListItem>
-                )}
-                
-                {charger.ChargerAccessType && (
-                  <ListItem>
-                    <ListItemText 
-                      primary="Access Type" 
-                      secondary={charger.ChargerAccessType} 
-                    />
-                  </ListItem>
-                )}
-              </List>
-            </Box>
-            
-            <Box mb={3}>
-              <Typography variant="h6" gutterBottom>Hardware Details</Typography>
-              <List dense disablePadding>
-                {(charger.ChargerBrand || charger.ChargerModel) && (
-                  <ListItem>
-                    <ListItemText 
-                      primary="Brand & Model" 
-                      secondary={`${charger.ChargerBrand || ''} ${charger.ChargerModel || ''}`.trim()} 
-                    />
-                  </ListItem>
-                )}
-                
-                {charger.ChargerSerial && (
-                  <ListItem>
-                    <ListItemIcon>
-                      <MemoryIcon />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="Serial Number" 
-                      secondary={charger.ChargerSerial} 
-                    />
-                  </ListItem>
-                )}
-                
-                {charger.ChargerPincode && (
-                  <ListItem>
-                    <ListItemText 
-                      primary="PIN Code" 
-                      secondary={charger.ChargerPincode} 
-                    />
-                  </ListItem>
-                )}
-                
-                {(charger.ChargerMeter || charger.ChargerMeterSerial) && (
-                  <ListItem>
-                    <ListItemIcon>
-                      <DeviceHubIcon />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="Meter" 
-                      secondary={
-                        <>
-                          {charger.ChargerMeter && (
-                            <Typography variant="body2">Model: {charger.ChargerMeter}</Typography>
-                          )}
-                          {charger.ChargerMeterSerial && (
-                            <Typography variant="body2">Serial: {charger.ChargerMeterSerial}</Typography>
-                          )}
-                        </>
-                      } 
-                    />
-                  </ListItem>
-                )}
-              </List>
-            </Box>
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Box mb={3}>
-              <Typography variant="h6" gutterBottom>Connectivity</Typography>
-              <List dense disablePadding>
-                {charger.ChargerWsURL && (
-                  <ListItem>
-                    <ListItemIcon>
-                      <HttpIcon />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="WebSocket URL" 
-                      secondary={charger.ChargerWsURL}
-                    />
-                  </ListItem>
-                )}
-                
-                {charger.ChargerICCID && (
-                  <ListItem>
-                    <ListItemText 
-                      primary="ICCID" 
-                      secondary={charger.ChargerICCID} 
-                    />
-                  </ListItem>
-                )}
-                
-                {(charger.ChargerLastConn || charger.ChargerLastHeartbeat) && (
-                  <ListItem>
-                    <ListItemText 
-                      primary="Connection Status" 
-                      secondary={
-                        <>
-                          {charger.ChargerLastConn && (
-                            <Typography variant="body2">
-                              Last Connection: {new Date(charger.ChargerLastConn).toLocaleString()}
-                            </Typography>
-                          )}
-                          {charger.ChargerLastHeartbeat && (
-                            <Typography variant="body2">
-                              Last Heartbeat: {new Date(charger.ChargerLastHeartbeat).toLocaleString()}
-                            </Typography>
-                          )}
-                        </>
-                      } 
-                    />
-                  </ListItem>
-                )}
-              </List>
-            </Box>
-            
-            <Box mb={3}>
-              <Typography variant="h6" gutterBottom>Availability</Typography>
-              <List dense disablePadding>
-                <ListItem>
-                  <ListItemText 
-                    primary="24/7 Operation" 
-                    secondary={charger.ChargerActive24x7 ? "Yes" : "No"} 
-                  />
-                </ListItem>
-                
-                {charger.ChargerAvailability && (
-                  <ListItem>
-                    <ListItemText 
-                      primary="Availability Schedule" 
-                      secondary={charger.ChargerAvailability} 
-                    />
-                  </ListItem>
-                )}
-              </List>
-            </Box>
-            
-            <Box mb={3}>
-              <Typography variant="h6" gutterBottom>Location Information</Typography>
-              <List dense disablePadding>
-                <ListItem>
-                  <ListItemIcon>
-                    <BusinessIcon />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary="Company" 
-                    secondary={company ? company.CompanyName : 'Unknown'} 
-                  />
-                </ListItem>
-                
-                <ListItem>
-                  <ListItemIcon>
-                    <LocationOnIcon />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary="Site" 
-                    secondary={site ? site.SiteName : 'Unknown'} 
-                  />
-                </ListItem>
-                
-                {charger.ChargerGeoCoord && (
-                  <ListItem>
-                    <ListItemText 
-                      primary="Geo Coordinates" 
-                      secondary={charger.ChargerGeoCoord} 
-                    />
-                  </ListItem>
-                )}
-              </List>
-            </Box>
-          </Grid>
-        </Grid>
-        
-        <Divider sx={{ my: 3 }} />
-        
-        <Box display="flex" justifyContent="flex-end" gap={2}>
+        <Box display="flex" justifyContent="flex-end" gap={2} mb={2}>
           <Button
             variant="outlined"
             color="primary"
@@ -438,13 +204,166 @@ const ChargerDetailsPage = () => {
             Delete
           </Button>
         </Box>
+        
+        <Divider sx={{ mb: 3 }} />
+        
+        {/* Single Row with all primary charger information */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12} sm={6} md={1.5}>
+            <Typography variant="subtitle2" color="text.secondary">Charger ID</Typography>
+            <Typography variant="body1">{charger.ChargerId}</Typography>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={1.5}>
+            <Typography variant="subtitle2" color="text.secondary">Company</Typography>
+            <Typography variant="body1">{company ? company.CompanyName : 'Unknown'}</Typography>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={1.5}>
+            <Typography variant="subtitle2" color="text.secondary">Site</Typography>
+            <Typography variant="body1">{site ? site.SiteName : 'Unknown'}</Typography>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={1.5}>
+            <Typography variant="subtitle2" color="text.secondary">Status</Typography>
+            <Box>
+              <Chip 
+                label={charger.ChargerEnabled ? "Enabled" : "Disabled"} 
+                color={charger.ChargerEnabled ? "success" : "default"}
+                size="small"
+                sx={{ mr: 1, mt: 0.5 }}
+              />
+              <Chip 
+                label={charger.ChargerIsOnline ? "Online" : "Offline"} 
+                color={charger.ChargerIsOnline ? "success" : "default"}
+                size="small"
+                sx={{ mt: 0.5 }}
+                icon={charger.ChargerIsOnline ? <SignalWifi4BarIcon /> : <SignalWifiOffIcon />}
+              />
+            </Box>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={2}>
+            <Typography variant="subtitle2" color="text.secondary">Model</Typography>
+            <Typography variant="body1">
+              {charger.ChargerBrand ? `${charger.ChargerBrand} ${charger.ChargerModel || ''}` : (charger.ChargerModel || '-')}
+            </Typography>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={2}>
+            <Typography variant="subtitle2" color="text.secondary">Serial Number</Typography>
+            <Typography variant="body1">{charger.ChargerSerial || '-'}</Typography>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={2}>
+            <Typography variant="subtitle2" color="text.secondary">Meter</Typography>
+            <Typography variant="body1">
+              {charger.ChargerMeter ? 
+                `${charger.ChargerMeter}${charger.ChargerMeterSerial ? ` (${charger.ChargerMeterSerial})` : ''}` : 
+                '-'}
+            </Typography>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={6}>
+            <Typography variant="subtitle2" color="text.secondary">Last Connection</Typography>
+            <Typography variant="body1">
+              {charger.ChargerLastConn ? new Date(charger.ChargerLastConn).toLocaleString() : '-'}
+            </Typography>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={6}>
+            <Typography variant="subtitle2" color="text.secondary">Last Heartbeat</Typography>
+            <Typography variant="body1">
+              {charger.ChargerLastHeartbeat ? new Date(charger.ChargerLastHeartbeat).toLocaleString() : '-'}
+            </Typography>
+          </Grid>
+        </Grid>
+        
+        {/* Additional characteristics in separate rows */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            <EvStationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+            Additional Characteristics
+          </Typography>
+          
+          <Grid container spacing={2}>
+            {charger.ChargerType && (
+              <Grid item xs={12} sm={4}>
+                <Typography variant="body2" color="text.secondary">Type</Typography>
+                <Typography variant="body1">{charger.ChargerType}</Typography>
+              </Grid>
+            )}
+            
+            {charger.ChargerAccessType && (
+              <Grid item xs={12} sm={4}>
+                <Typography variant="body2" color="text.secondary">Access Type</Typography>
+                <Typography variant="body1">{charger.ChargerAccessType}</Typography>
+              </Grid>
+            )}
+            
+            <Grid item xs={12} sm={4}>
+              <Typography variant="body2" color="text.secondary">24/7 Operation</Typography>
+              <Typography variant="body1">{charger.ChargerActive24x7 ? "Yes" : "No"}</Typography>
+            </Grid>
+            
+            {charger.ChargerAvailability && (
+              <Grid item xs={12} sm={12}>
+                <Typography variant="body2" color="text.secondary">Availability Schedule</Typography>
+                <Typography variant="body1">{charger.ChargerAvailability}</Typography>
+              </Grid>
+            )}
+          </Grid>
+        </Box>
+        
+        {/* Connectivity Section */}
+        {(charger.ChargerWsURL || charger.ChargerICCID || charger.ChargerFirmwareVersion) && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              <HttpIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+              Connectivity
+            </Typography>
+            
+            <Grid container spacing={2}>
+              {charger.ChargerWsURL && (
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="body2" color="text.secondary">WebSocket URL</Typography>
+                  <Typography variant="body1">{charger.ChargerWsURL}</Typography>
+                </Grid>
+              )}
+              
+              {charger.ChargerICCID && (
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="body2" color="text.secondary">ICCID</Typography>
+                  <Typography variant="body1">{charger.ChargerICCID}</Typography>
+                </Grid>
+              )}
+              
+              {charger.ChargerFirmwareVersion && (
+                <Grid item xs={12} sm={4}>
+                  <Typography variant="body2" color="text.secondary">Firmware Version</Typography>
+                  <Typography variant="body1">{charger.ChargerFirmwareVersion}</Typography>
+                </Grid>
+              )}
+            </Grid>
+          </Box>
+        )}
+        
+        {/* Location Section */}
+        {charger.ChargerGeoCoord && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              <LocationOnIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+              Location
+            </Typography>
+            
+            <Typography variant="body1">
+              Geo Coordinates: {charger.ChargerGeoCoord}
+            </Typography>
+          </Box>
+        )}
       </Paper>
 
-      {/* WebSocket Connection Status */}
-      <ChargePointStatus 
-        chargePointId={charger.ChargerName} 
-        chargerName={charger.ChargerName}
-      />
+      {/* WebSocket Connection Status section has been removed */}
 
       {/* Charge Point Control */}
       <ChargePointControl 
@@ -459,7 +378,7 @@ const ChargerDetailsPage = () => {
           <Typography variant="h5">Charging Sessions</Typography>
           <Button 
             component={RouterLink} 
-            to={`/sessions?charger=${chargerId}&company=${companyId}&site=${siteId}`}
+            to={`/chargers/${chargerId}/sessions?company=${companyId}&site=${siteId}`}
             variant="outlined"
           >
             View All Sessions

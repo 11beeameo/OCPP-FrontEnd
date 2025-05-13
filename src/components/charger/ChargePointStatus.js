@@ -1,11 +1,10 @@
-// src/components/charger/ChargePointStatus.js
+// Updated ChargePointStatus component with removed connection status entry
 import React from 'react';
 import {
   Box,
   Paper,
   Typography,
-  Chip,
-  Alert
+  Chip
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import SignalWifi4BarIcon from '@mui/icons-material/SignalWifi4Bar';
@@ -39,9 +38,6 @@ const ChargePointStatus = ({ chargePointId, chargerName }) => {
       </Box>
       
       <Box display="flex" alignItems="center" gap={2}>
-        <Typography variant="body1">
-          Charge Point ID: <strong>{chargePointId}</strong>
-        </Typography>
         <Chip
           icon={isConnected ? <SignalWifi4BarIcon /> : <SignalWifiOffIcon />}
           label={isConnected ? 'Connected to OCPP Server' : 'Not Connected to OCPP Server'}
@@ -49,13 +45,6 @@ const ChargePointStatus = ({ chargePointId, chargerName }) => {
           size="small"
         />
       </Box>
-      
-      {!isConnected && (
-        <Alert severity="warning" sx={{ mt: 2 }}>
-          This charge point is not currently connected to the OCPP server. 
-          The charger name "{chargerName}" should match exactly with the charge point ID used in the WebSocket connection.
-        </Alert>
-      )}
       
       {chargePoints?.count > 0 && (
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>

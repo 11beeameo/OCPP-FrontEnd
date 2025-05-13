@@ -1,4 +1,4 @@
-// src/pages/session/SessionDetailsPage.js
+// Complete SessionDetailsPage.js with only energy plot
 import React from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -94,9 +94,7 @@ const SessionDetailsPage = () => {
     time: format(new Date(reading.EventsDataDateTime), 'HH:mm:ss'),
     energy: reading.EventsDataMeterValue ? reading.EventsDataMeterValue / 1000 : 0, // Convert Wh to kWh
     current: reading.EventsDataCurrent || 0,
-    voltage: reading.EventsDataVoltage || 0,
-    power: (reading.EventsDataCurrent && reading.EventsDataVoltage) ? 
-      (reading.EventsDataCurrent * reading.EventsDataVoltage) / 1000 : 0 // kW
+    voltage: reading.EventsDataVoltage || 0
   })) || [];
 
   return (
@@ -294,12 +292,12 @@ const SessionDetailsPage = () => {
         </Grid>
       </Paper>
 
-      {/* Power Chart */}
+      {/* Energy Chart (Power removed) */}
       {chartData.length > 0 && (
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
           <Box display="flex" alignItems="center" mb={2}>
             <TimelineIcon sx={{ mr: 1 }} />
-            <Typography variant="h6">Session Power Timeline</Typography>
+            <Typography variant="h6">Session Energy Timeline</Typography>
           </Box>
           
           <Box sx={{ width: '100%', height: 400 }}>
@@ -309,13 +307,6 @@ const SessionDetailsPage = () => {
                 <XAxis dataKey="time" />
                 <YAxis />
                 <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="power" 
-                  stroke="#2563eb" 
-                  name="Power (kW)" 
-                  strokeWidth={2}
-                />
                 <Line 
                   type="monotone" 
                   dataKey="energy" 

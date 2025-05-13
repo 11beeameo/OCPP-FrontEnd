@@ -1,4 +1,4 @@
-// src/components/site/SiteList.js
+// Modified version of src/components/site/SiteList.js
 import React from 'react';
 import { 
   Box, 
@@ -7,9 +7,11 @@ import {
   CardContent, 
   Grid, 
   Chip, 
-  IconButton,
+  Button,
   Divider,
-  Button
+  CardActions,
+  Stack,
+  Tooltip
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
@@ -69,75 +71,87 @@ const SiteList = ({
       ) : (
         <Grid container spacing={3}>
           {sites && sites.map((site) => (
-            <Grid item xs={12} md={6} key={site.SiteId}>
-              <Card>
-                <CardContent>
-                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                    <Typography variant="h6">
-                      {site.SiteName}
-                    </Typography>
-                    <Chip 
-                      label={site.SiteEnabled ? "Active" : "Inactive"} 
+            <Grid item xs={12} md={6} lg={4} key={site.SiteId}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardContent sx={{ flexGrow: 1 }}>
+                  {/* Site Name */}
+                  <Typography variant="h6" component="div" gutterBottom noWrap>
+                    {site.SiteName}
+                  </Typography>
+                  
+                  {/* Status Chip */}
+                  <Box display="flex" alignItems="center" mb={2}>
+                    <Chip
+                      label={site.SiteEnabled ? "Enabled" : "Disabled"}
                       color={site.SiteEnabled ? "success" : "default"}
                       size="small"
                     />
                   </Box>
                   
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    ID: {site.SiteId}
-                  </Typography>
-                  
-                  {site.SiteAddress && (
-                    <Box display="flex" alignItems="flex-start" mb={1}>
-                      <LocationOnIcon fontSize="small" color="action" sx={{ mr: 1, mt: 0.5 }} />
+                  {/* Site Address */}
+                  {(site.SiteAddress || site.SiteCity || site.SiteRegion || site.SiteCountry) && (
+                    <Box display="flex" alignItems="flex-start" mb={2}>
+                      <LocationOnIcon fontSize="small" sx={{ mr: 1, mt: 0.5, color: 'text.secondary' }} />
                       <Box>
-                        <Typography variant="body2">
-                          {site.SiteAddress}
-                          {site.SiteCity && `, ${site.SiteCity}`}
-                          {site.SiteRegion && `, ${site.SiteRegion}`}
-                        </Typography>
-                        {site.SiteCountry && (
+                        {site.SiteAddress && (
                           <Typography variant="body2">
-                            {site.SiteCountry} {site.SiteZipCode && site.SiteZipCode}
+                            {site.SiteAddress}
                           </Typography>
                         )}
+                        <Typography variant="body2">
+                          {[site.SiteCity, site.SiteRegion, site.SiteCountry]
+                            .filter(Boolean)
+                            .join(', ')}
+                        </Typography>
                       </Box>
                     </Box>
                   )}
-                  
-                  {site.SiteContactName && (
-                    <Typography variant="body2" color="text.secondary" mb={1}>
-                      Contact: {site.SiteContactName}
-                      {site.SiteContactPh && ` • ${site.SiteContactPh}`}
-                    </Typography>
-                  )}
-                  
-                  <Box display="flex" justifyContent="flex-end" mt={2}>
-                    <IconButton 
-                      component={Link} 
-                      to={`/sites/${site.SiteId}`}
-                      aria-label="view"
-                      color="primary"
-                    >
-                      <VisibilityIcon />
-                    </IconButton>
-                    <IconButton 
-                      component={Link} 
-                      to={`/sites/${site.SiteId}/edit`}
-                      aria-label="edit"
-                      color="primary"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton 
-                      aria-label="delete"
-                      color="error"
-                      onClick={() => onDeleteClick && onDeleteClick(site.SiteId)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
                 </CardContent>
+                
+                <Divider />
+                
+                {/* Action Buttons */}
+                <CardActions sx={{ justifyContent: 'center', p: 2 }}>
+                  <Stack direction="row" spacing={1}>
+                    <Tooltip title="View Site Details">
+                      <Button
+                        component={Link}
+                        to={`/sites/${site.SiteId}`}
+                        variant="outlined"
+                        color="primary"
+                        startIcon={<VisibilityIcon />}
+                        size="small"
+                      >
+                        View
+                      </Button>
+                    </Tooltip>
+                    
+                    <Tooltip title="Edit Site">
+                      <Button
+                        component={Link}
+                        to={`/sites/${site.SiteId}/edit`}
+                        variant="outlined"
+                        color="info"
+                        startIcon={<EditIcon />}
+                        size="small"
+                      >
+                        Edit
+                      </Button>
+                    </Tooltip>
+                    
+                    <Tooltip title="Delete Site">
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => onDeleteClick && onDeleteClick(site.SiteId)}
+                        size="small"
+                      >
+                        Delete
+                      </Button>
+                    </Tooltip>
+                  </Stack>
+                </CardActions>
               </Card>
             </Grid>
           ))}

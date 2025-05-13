@@ -23,6 +23,7 @@ import ChargersPage from './pages/charger/ChargersPage';
 import ChargerDetailsPage from './pages/charger/ChargerDetailsPage';
 import ChargerCreatePage from './pages/charger/ChargerCreatePage';
 import ChargerEditPage from './pages/charger/ChargerEditPage';
+import ChargerSessionsPage from './pages/charger/ChargerSessionsPage';
 
 // Session pages
 import SessionsPage from './pages/session/SessionsPage';
@@ -69,6 +70,7 @@ function App() {
             <Route path="/sites/:siteId/chargers/new" element={<ChargerCreatePage />} />
             <Route path="/chargers/:id" element={<ChargerDetailsPage />} />
             <Route path="/chargers/:id/edit" element={<ChargerEditPage />} />
+            <Route path="/chargers/:id/sessions" element={<ChargerSessionsPage />} />
             
             {/* Session routes */}
             <Route path="/sessions" element={<SessionsPage />} />
@@ -87,4 +89,3 @@ function App() {
 }
 
 export default App;
-

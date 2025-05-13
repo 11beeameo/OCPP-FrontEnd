@@ -1,4 +1,4 @@
-// src/components/site/SiteForm.js
+// src/components/site/SiteForm.js - Modified for vertical layout
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -12,7 +12,9 @@ import {
   Grid,
   CircularProgress,
   Paper,
-  InputAdornment
+  InputAdornment,
+  Typography,
+  Divider
 } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -88,9 +90,14 @@ const SiteForm = ({ site, companyId, onSubmit, isLoading }) => {
   return (
     <Paper elevation={2} sx={{ p: 3 }}>
       <form onSubmit={handleSubmit(onFormSubmit)}>
-        <Grid container spacing={3}>
+        <Grid container spacing={3} direction="column">
           {/* Basic Information */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom>Basic Information</Typography>
+            <Divider sx={{ mb: 2 }} />
+          </Grid>
+
+          <Grid item xs={12}>
             <Controller
               name="SiteName"
               control={control}
@@ -114,7 +121,7 @@ const SiteForm = ({ site, companyId, onSubmit, isLoading }) => {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="SiteTaxRate"
               control={control}
@@ -152,6 +159,11 @@ const SiteForm = ({ site, companyId, onSubmit, isLoading }) => {
 
           {/* Address Information */}
           <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Address Information</Typography>
+            <Divider sx={{ mb: 2 }} />
+          </Grid>
+
+          <Grid item xs={12}>
             <Controller
               name="SiteAddress"
               control={control}
@@ -174,7 +186,7 @@ const SiteForm = ({ site, companyId, onSubmit, isLoading }) => {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="SiteCity"
               control={control}
@@ -190,7 +202,7 @@ const SiteForm = ({ site, companyId, onSubmit, isLoading }) => {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="SiteRegion"
               control={control}
@@ -206,7 +218,7 @@ const SiteForm = ({ site, companyId, onSubmit, isLoading }) => {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="SiteCountry"
               control={control}
@@ -222,7 +234,7 @@ const SiteForm = ({ site, companyId, onSubmit, isLoading }) => {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="SiteZipCode"
               control={control}
@@ -238,7 +250,7 @@ const SiteForm = ({ site, companyId, onSubmit, isLoading }) => {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="SiteGeoCoord"
               control={control}
@@ -256,7 +268,12 @@ const SiteForm = ({ site, companyId, onSubmit, isLoading }) => {
           </Grid>
 
           {/* Contact Information */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Contact Information</Typography>
+            <Divider sx={{ mb: 2 }} />
+          </Grid>
+
+          <Grid item xs={12}>
             <Controller
               name="SiteContactName"
               control={control}
@@ -272,7 +289,7 @@ const SiteForm = ({ site, companyId, onSubmit, isLoading }) => {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="SiteContactPh"
               control={control}
@@ -295,7 +312,7 @@ const SiteForm = ({ site, companyId, onSubmit, isLoading }) => {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="SiteContactEmail"
               control={control}
@@ -319,7 +336,7 @@ const SiteForm = ({ site, companyId, onSubmit, isLoading }) => {
           </Grid>
 
           <Grid item xs={12}>
-            <Box display="flex" justifyContent="flex-end">
+            <Box display="flex" justifyContent="flex-end" mt={2}>
               <Button
                 type="submit"
                 variant="contained"

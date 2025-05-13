@@ -1,4 +1,5 @@
-// src/pages/site/SiteDetailsPage.js
+// Full SiteDetailsPage.js with updated structure
+
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -18,11 +19,7 @@ import {
   DialogContentText,
   DialogTitle,
   Snackbar,
-  Alert,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText
+  Alert
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -31,7 +28,6 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import BusinessIcon from '@mui/icons-material/Business';
-import PercentIcon from '@mui/icons-material/Percent';
 import { getSite, deleteSite } from '../../api/siteAPI';
 import { getCompany } from '../../api/companyAPI';
 import { getSiteChargers, deleteCharger } from '../../api/chargerAPI';
@@ -198,153 +194,14 @@ const SiteDetailsPage = () => {
       </Box>
 
       <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Box mb={3}>
-              <Typography variant="h6" gutterBottom>Basic Information</Typography>
-              <List dense disablePadding>
-                <ListItem>
-                  <ListItemIcon>
-                    <BusinessIcon />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary="Site ID" 
-                    secondary={site.SiteId} 
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText 
-                    primary="Status" 
-                    secondary={
-                      <Chip 
-                        label={site.SiteEnabled ? "Active" : "Inactive"} 
-                        color={site.SiteEnabled ? "success" : "default"}
-                        size="small"
-                        sx={{ mt: 0.5 }}
-                      />
-                    } 
-                  />
-                </ListItem>
-                {site.SiteTaxRate !== null && (
-                  <ListItem>
-                    <ListItemIcon>
-                      <PercentIcon />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="Tax Rate" 
-                      secondary={`${site.SiteTaxRate}%`} 
-                    />
-                  </ListItem>
-                )}
-              </List>
-            </Box>
-            
-            {hasAddress && (
-              <Box mb={3}>
-                <Typography variant="h6" gutterBottom>Address</Typography>
-                <List dense disablePadding>
-                  <ListItem>
-                    <ListItemIcon>
-                      <LocationOnIcon />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary={addressLine1} 
-                      secondary={
-                        <>
-                          {addressLine2 && <Typography variant="body2">{addressLine2}</Typography>}
-                          {addressLine3 && <Typography variant="body2">{addressLine3}</Typography>}
-                        </>
-                      } 
-                    />
-                  </ListItem>
-                </List>
-              </Box>
-            )}
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Box mb={3}>
-              <Typography variant="h6" gutterBottom>Contact Information</Typography>
-              {(site.SiteContactName || site.SiteContactPh || site.SiteContactEmail) ? (
-                <List dense disablePadding>
-                  {site.SiteContactName && (
-                    <ListItem>
-                      <ListItemText 
-                        primary="Contact Name" 
-                        secondary={site.SiteContactName} 
-                      />
-                    </ListItem>
-                  )}
-                  {site.SiteContactPh && (
-                    <ListItem>
-                      <ListItemIcon>
-                        <PhoneIcon />
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary="Phone" 
-                        secondary={site.SiteContactPh} 
-                      />
-                    </ListItem>
-                  )}
-                  {site.SiteContactEmail && (
-                    <ListItem>
-                      <ListItemIcon>
-                        <EmailIcon />
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary="Email" 
-                        secondary={site.SiteContactEmail} 
-                      />
-                    </ListItem>
-                  )}
-                </List>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No contact information available
-                </Typography>
-              )}
-            </Box>
-            
-            <Box mb={3}>
-              <Typography variant="h6" gutterBottom>Metadata</Typography>
-              <List dense disablePadding>
-                <ListItem>
-                  <ListItemText 
-                    primary="Created" 
-                    secondary={new Date(site.SiteCreated).toLocaleString()} 
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText 
-                    primary="Last Updated" 
-                    secondary={new Date(site.SiteUpdated).toLocaleString()} 
-                  />
-                </ListItem>
-                {site.SiteGeoCoord && (
-                  <ListItem>
-                    <ListItemIcon>
-                      <LocationOnIcon />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="Geo Coordinates" 
-                      secondary={site.SiteGeoCoord} 
-                    />
-                  </ListItem>
-                )}
-              </List>
-            </Box>
-          </Grid>
-        </Grid>
-        
-        <Divider sx={{ my: 3 }} />
-        
-        <Box display="flex" justifyContent="flex-end" gap={2}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
           <Button
             variant="outlined"
             color="primary"
             startIcon={<EditIcon />}
             component={RouterLink}
             to={`/sites/${site.SiteId}/edit`}
+            sx={{ mr: 1 }}
           >
             Edit
           </Button>
@@ -356,6 +213,107 @@ const SiteDetailsPage = () => {
           >
             Delete
           </Button>
+        </Box>
+        
+        <Divider sx={{ mb: 3 }} />
+        
+        {/* Row 1: Basic Information and Metadata */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12} sm={2}>
+            <Typography variant="subtitle2" color="text.secondary">Site ID</Typography>
+            <Typography variant="body1">{site.SiteId}</Typography>
+          </Grid>
+          
+          <Grid item xs={12} sm={2}>
+            <Typography variant="subtitle2" color="text.secondary">Status</Typography>
+            <Chip 
+              label={site.SiteEnabled ? "Enabled" : "Disabled"} 
+              color={site.SiteEnabled ? "success" : "default"}
+              size="small"
+            />
+          </Grid>
+          
+          <Grid item xs={12} sm={2}>
+            <Typography variant="subtitle2" color="text.secondary">Tax Rate</Typography>
+            <Typography variant="body1">{site.SiteTaxRate ? `${site.SiteTaxRate}%` : '-'}</Typography>
+          </Grid>
+          
+          <Grid item xs={12} sm={3}>
+            <Typography variant="subtitle2" color="text.secondary">Created At</Typography>
+            <Typography variant="body1">{new Date(site.SiteCreated).toLocaleString()}</Typography>
+          </Grid>
+          
+          <Grid item xs={12} sm={3}>
+            <Typography variant="subtitle2" color="text.secondary">Last Updated</Typography>
+            <Typography variant="body1">{new Date(site.SiteUpdated).toLocaleString()}</Typography>
+          </Grid>
+        </Grid>
+        
+        {/* Row 2: Address Information */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            <LocationOnIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+            Address
+          </Typography>
+          
+          {hasAddress ? (
+            <Typography variant="body1">
+              {addressLine1 && <>{addressLine1}<br /></>}
+              {addressLine2 && <>{addressLine2}<br /></>}
+              {addressLine3 && <>{addressLine3}</>}
+            </Typography>
+          ) : (
+            <Typography variant="body1" color="text.secondary">
+              No address information available
+            </Typography>
+          )}
+          
+          {site.SiteGeoCoord && (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Geo Coordinates: {site.SiteGeoCoord}
+            </Typography>
+          )}
+        </Box>
+        
+        {/* Row 3: Contact Phone */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+            Contact Phone
+          </Typography>
+          
+          {site.SiteContactPh ? (
+            <Typography variant="body1">
+              {site.SiteContactPh}
+              {site.SiteContactName && (
+                <Typography variant="body2" color="text.secondary">
+                  Contact: {site.SiteContactName}
+                </Typography>
+              )}
+            </Typography>
+          ) : (
+            <Typography variant="body1" color="text.secondary">
+              No contact phone available
+            </Typography>
+          )}
+        </Box>
+        
+        {/* Row 4: Contact Email */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            <EmailIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+            Contact Email
+          </Typography>
+          
+          {site.SiteContactEmail ? (
+            <Typography variant="body1">
+              {site.SiteContactEmail}
+            </Typography>
+          ) : (
+            <Typography variant="body1" color="text.secondary">
+              No contact email available
+            </Typography>
+          )}
         </Box>
       </Paper>
 

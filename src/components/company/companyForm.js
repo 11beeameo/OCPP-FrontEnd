@@ -1,4 +1,4 @@
-// src/components/company/CompanyForm.js
+// src/components/company/CompanyForm.js - Modified for vertical layout
 import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -11,7 +11,9 @@ import {
   Switch,
   Grid,
   CircularProgress,
-  Paper
+  Paper,
+  Typography,
+  Divider
 } from '@mui/material';
 
 // Define validation schema
@@ -51,7 +53,12 @@ const CompanyForm = ({ company, onSubmit, isLoading }) => {
   return (
     <Paper elevation={2} sx={{ p: 3 }}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Grid container spacing={3}>
+        <Grid container spacing={3} direction="column">
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom>Basic Information</Typography>
+            <Divider sx={{ mb: 2 }} />
+          </Grid>
+
           <Grid item xs={12}>
             <Controller
               name="CompanyName"
@@ -86,8 +93,13 @@ const CompanyForm = ({ company, onSubmit, isLoading }) => {
               )}
             />
           </Grid>
+          
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Branding</Typography>
+            <Divider sx={{ mb: 2 }} />
+          </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="CompanyHomePhoto"
               control={control}
@@ -103,7 +115,7 @@ const CompanyForm = ({ company, onSubmit, isLoading }) => {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="CompanyBrandColour"
               control={control}
@@ -132,7 +144,7 @@ const CompanyForm = ({ company, onSubmit, isLoading }) => {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="CompanyBrandLogo"
               control={control}
@@ -148,7 +160,7 @@ const CompanyForm = ({ company, onSubmit, isLoading }) => {
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="CompanyBrandFavicon"
               control={control}
@@ -165,7 +177,7 @@ const CompanyForm = ({ company, onSubmit, isLoading }) => {
           </Grid>
 
           <Grid item xs={12}>
-            <Box display="flex" justifyContent="flex-end">
+            <Box display="flex" justifyContent="flex-end" mt={2}>
               <Button
                 type="submit"
                 variant="contained"

@@ -22,7 +22,11 @@ import {
   Select,
   MenuItem,
   TextField,
-  InputAdornment
+  InputAdornment,
+  Paper,
+  styled,
+  Stack,
+  Tooltip
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
@@ -41,6 +45,14 @@ import { getSites, getCompanySites } from '../../api/siteAPI';
 import LoadingSpinner from '../../components/common/Loadingspinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
 
+// Create a styled Card to ensure consistent sizes
+const ChargerCard = styled(Card)(({ theme }) => ({
+  height: 280,
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
 const ChargersPage = () => {
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -54,7 +66,6 @@ const ChargersPage = () => {
     companyId: '',
     siteId: '',
     enabled: '',
-    online: '',
     search: ''
   });
 
@@ -223,6 +234,16 @@ const ChargersPage = () => {
     return <ErrorAlert message={error instanceof Error ? error.message : 'Failed to load chargers'} />;
   }
 
+  // Common MenuProps for all dropdowns to ensure consistent size
+  const menuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: 300,
+        width: 300,
+      },
+    },
+  };
+
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
@@ -230,9 +251,9 @@ const ChargersPage = () => {
       </Box>
 
       {/* Filters */}
-      <Box mb={4} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
+      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+        <Grid container spacing={3} alignItems="center">
+          <Grid item xs={12} md={3}>
             <TextField
               name="search"
               label="Search Chargers"
@@ -247,12 +268,12 @@ const ChargersPage = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{ height: '100%' }}
+              size="medium"
             />
           </Grid>
           
-          <Grid item xs={12} md={4}>
-            <FormControl fullWidth sx={{ height: '100%' }}>
+          <Grid item xs={12} md={3}>
+            <FormControl fullWidth>
               <InputLabel id="company-filter-label">Company</InputLabel>
               <Select
                 labelId="company-filter-label"
@@ -265,6 +286,7 @@ const ChargersPage = () => {
                     <BusinessIcon />
                   </InputAdornment>
                 }
+                MenuProps={menuProps}
               >
                 {!isLoadingCompanies && companies && companies.map((company) => (
                   <MenuItem key={company.CompanyId} value={company.CompanyId.toString()}>
@@ -275,8 +297,8 @@ const ChargersPage = () => {
             </FormControl>
           </Grid>
           
-          <Grid item xs={12} md={4}>
-            <FormControl fullWidth sx={{ height: '100%' }}>
+          <Grid item xs={12} md={3}>
+            <FormControl fullWidth>
               <InputLabel id="site-filter-label">Site</InputLabel>
               <Select
                 labelId="site-filter-label"
@@ -290,6 +312,7 @@ const ChargersPage = () => {
                     <LocationOnIcon />
                   </InputAdornment>
                 }
+                MenuProps={menuProps}
               >
                 {!isLoadingSites && sites && sites.map((site) => (
                   <MenuItem key={site.SiteId} value={site.SiteId.toString()}>
@@ -300,8 +323,8 @@ const ChargersPage = () => {
             </FormControl>
           </Grid>
           
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth sx={{ height: '100%' }}>
+          <Grid item xs={12} md={3}>
+            <FormControl fullWidth>
               <InputLabel id="status-filter-label">Status</InputLabel>
               <Select
                 labelId="status-filter-label"
@@ -309,6 +332,10 @@ const ChargersPage = () => {
                 value={filters.enabled}
                 label="Status"
                 onChange={handleFilterChange}
+                MenuProps={menuProps}
+                sx={{
+                  minWidth: 200,
+                }}
               >
                 <MenuItem value="">All Statuses</MenuItem>
                 <MenuItem value="true">Enabled</MenuItem>
@@ -316,25 +343,8 @@ const ChargersPage = () => {
               </Select>
             </FormControl>
           </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth sx={{ height: '100%' }}>
-              <InputLabel id="online-filter-label">Connection</InputLabel>
-              <Select
-                labelId="online-filter-label"
-                name="online"
-                value={filters.online}
-                label="Connection"
-                onChange={handleFilterChange}
-              >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="true">Online</MenuItem>
-                <MenuItem value="false">Offline</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
         </Grid>
-      </Box>
+      </Paper>
 
       {/* Company and Site information display */}
       <Box mb={3}>
@@ -361,18 +371,30 @@ const ChargersPage = () => {
           )}
         </Box>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
           {filteredChargers && filteredChargers.map((charger) => (
-            <Grid item xs={12} md={6} lg={4} key={`${charger.ChargerId}-${charger.ChargerCompanyId}-${charger.ChargerSiteId}`}>
-              <Card>
-                <CardContent>
+            <Box key={`${charger.ChargerId}-${charger.ChargerCompanyId}-${charger.ChargerSiteId}`} sx={{ 
+              width: '33.33%', 
+              padding: 1.5,
+              boxSizing: 'border-box',
+              '@media (max-width: 960px)': {
+                width: '50%',
+              },
+              '@media (max-width: 600px)': {
+                width: '100%',
+              },
+            }}>
+              <ChargerCard>
+                <CardContent sx={{ 
+                  flexGrow: 1, 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  p: 3,
+                }}>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                    <Box display="flex" alignItems="center">
-                      <EvStationIcon sx={{ mr: 1 }} />
-                      <Typography variant="h6">
-                        {charger.ChargerName}
-                      </Typography>
-                    </Box>
+                    <Typography variant="h6" noWrap>
+                      {charger.ChargerName}
+                    </Typography>
                     <Box>
                       <Chip 
                         label={charger.ChargerEnabled ? "Enabled" : "Disabled"} 
@@ -406,49 +428,69 @@ const ChargersPage = () => {
                   <Box mb={2}>
                     <Box display="flex" alignItems="center" mb={0.5}>
                       <BusinessIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.secondary" noWrap>
                         {currentCompanyName}
                       </Typography>
                     </Box>
                     
                     <Box display="flex" alignItems="center">
                       <LocationOnIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.secondary" noWrap>
                         {currentSiteName}
                       </Typography>
                     </Box>
                   </Box>
                   
-                  <Box display="flex" justifyContent="flex-end" mt={2}>
-                    <IconButton 
-                      component={Link} 
-                      to={`/chargers/${charger.ChargerId}?company=${charger.ChargerCompanyId}&site=${charger.ChargerSiteId}`}
-                      aria-label="view"
-                      color="primary"
-                    >
-                      <VisibilityIcon />
-                    </IconButton>
-                    <IconButton 
-                      component={Link} 
-                      to={`/chargers/${charger.ChargerId}/edit?company=${charger.ChargerCompanyId}&site=${charger.ChargerSiteId}`}
-                      aria-label="edit"
-                      color="primary"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton 
-                      aria-label="delete"
-                      color="error"
-                      onClick={() => handleDeleteClick(charger)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                  {/* This spacer pushes the action buttons to the bottom */}
+                  <Box sx={{ flexGrow: 1 }} />
+                  
+                  {/* Updated action buttons with text labels */}
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 1 }}>
+                    <Stack direction="row" spacing={1}>
+                      <Tooltip title="View Charger Details">
+                        <Button
+                          component={Link}
+                          to={`/chargers/${charger.ChargerId}?company=${charger.ChargerCompanyId}&site=${charger.ChargerSiteId}`}
+                          variant="outlined"
+                          color="primary"
+                          startIcon={<VisibilityIcon />}
+                          size="small"
+                        >
+                          View
+                        </Button>
+                      </Tooltip>
+                      
+                      <Tooltip title="Edit Charger">
+                        <Button
+                          component={Link}
+                          to={`/chargers/${charger.ChargerId}/edit?company=${charger.ChargerCompanyId}&site=${charger.ChargerSiteId}`}
+                          variant="outlined"
+                          color="info"
+                          startIcon={<EditIcon />}
+                          size="small"
+                        >
+                          Edit
+                        </Button>
+                      </Tooltip>
+                      
+                      <Tooltip title="Delete Charger">
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          startIcon={<DeleteIcon />}
+                          onClick={() => handleDeleteClick(charger)}
+                          size="small"
+                        >
+                          Delete
+                        </Button>
+                      </Tooltip>
+                    </Stack>
                   </Box>
                 </CardContent>
-              </Card>
-            </Grid>
+              </ChargerCard>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
 
       {/* Delete Confirmation Dialog */}

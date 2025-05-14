@@ -1,4 +1,4 @@
-// src/components/session/SessionList.js
+// src/components/session/SessionList.js - updated for consistent card sizing
 import React from 'react';
 import { 
   Box, 
@@ -12,7 +12,9 @@ import {
   Paper,
   Chip,
   IconButton,
-  Button
+  Button,
+  Card,
+  CardContent
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -87,107 +89,111 @@ const SessionList = ({
   }
 
   return (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Session ID</TableCell>
-            {showCharger && <TableCell>Charger</TableCell>}
-            <TableCell>Connector</TableCell>
-            {showDriver && <TableCell>Driver</TableCell>}
-            <TableCell>Start Time</TableCell>
-            <TableCell>End Time</TableCell>
-            <TableCell>Duration</TableCell>
-            <TableCell>Energy (kWh)</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell align="center">Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {sessions.map((session) => (
-            <TableRow key={session.ChargeSessionId}>
-              <TableCell>#{session.ChargeSessionId}</TableCell>
-              
-              {showCharger && (
-                <TableCell>{session.ChargerSessionChargerId}</TableCell>
-              )}
-              
-              <TableCell>
-                <Chip 
-                  label={`#${session.ChargerSessionConnectorId}`} 
-                  size="small" 
-                  variant="outlined"
-                />
-              </TableCell>
-              
-              {showDriver && (
-                <TableCell>
-                  {session.ChargerSessionDriverId ? (
-                    <Box>
-                      <Typography variant="body2">
-                        Driver ID: {session.ChargerSessionDriverId}
-                      </Typography>
-                      {session.ChargerSessionRFIDCard && (
-                        <Typography variant="caption" color="text.secondary">
-                          RFID: {session.ChargerSessionRFIDCard}
-                        </Typography>
-                      )}
-                    </Box>
-                  ) : (
-                    '-'
+    <Card sx={{ width: '100%' }}>
+      <CardContent sx={{ padding: 0 }}>
+        <TableContainer component={Paper} sx={{ maxHeight: 650, overflow: 'auto' }}>
+          <Table stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell width="120px">Session ID</TableCell>
+                {showCharger && <TableCell width="120px">Charger</TableCell>}
+                <TableCell width="100px">Connector</TableCell>
+                {showDriver && <TableCell width="180px">Driver</TableCell>}
+                <TableCell width="180px">Start Time</TableCell>
+                <TableCell width="180px">End Time</TableCell>
+                <TableCell width="120px">Duration</TableCell>
+                <TableCell width="120px">Energy</TableCell>
+                <TableCell width="100px">Status</TableCell>
+                <TableCell width="80px" align="center">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sessions.map((session) => (
+                <TableRow key={session.ChargeSessionId}>
+                  <TableCell>#{session.ChargeSessionId}</TableCell>
+                  
+                  {showCharger && (
+                    <TableCell>{session.ChargerSessionChargerId}</TableCell>
                   )}
-                </TableCell>
-              )}
-              
-              <TableCell>
-                <Box display="flex" alignItems="center">
-                  <AccessTimeIcon fontSize="small" sx={{ mr: 0.5 }} />
-                  {formatDateTime(session.ChargerSessionStart)}
-                </Box>
-              </TableCell>
-              
-              <TableCell>
-                {session.ChargerSessionEnd ? formatDateTime(session.ChargerSessionEnd) : '-'}
-              </TableCell>
-              
-              <TableCell>
-                {formatDuration(session.ChargerSessionDuration)}
-              </TableCell>
-              
-              <TableCell>
-                <Box display="flex" alignItems="center">
-                  <BoltIcon fontSize="small" sx={{ mr: 0.5, color: 'warning.main' }} />
-                  {session.ChargerSessionEnergyKWH ? 
-                    `${session.ChargerSessionEnergyKWH.toFixed(2)} kWh` : 
-                    '-'
-                  }
-                </Box>
-              </TableCell>
-              
-              <TableCell>
-                <Chip 
-                  label={session.ChargerSessionStatus || 'Unknown'} 
-                  color={getStatusColor(session.ChargerSessionStatus)}
-                  size="small"
-                />
-              </TableCell>
-              
-              <TableCell align="center">
-                <IconButton 
-                  component={Link} 
-                  to={`/sessions/${session.ChargeSessionId}`}
-                  aria-label="view session details"
-                  color="primary"
-                  size="small"
-                >
-                  <VisibilityIcon />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                  
+                  <TableCell>
+                    <Chip 
+                      label={`#${session.ChargerSessionConnectorId}`} 
+                      size="small" 
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  
+                  {showDriver && (
+                    <TableCell>
+                      {session.ChargerSessionDriverId ? (
+                        <Box>
+                          <Typography variant="body2" noWrap>
+                            Driver ID: {session.ChargerSessionDriverId}
+                          </Typography>
+                          {session.ChargerSessionRFIDCard && (
+                            <Typography variant="caption" color="text.secondary" noWrap>
+                              RFID: {session.ChargerSessionRFIDCard}
+                            </Typography>
+                          )}
+                        </Box>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+                  )}
+                  
+                  <TableCell>
+                    <Box display="flex" alignItems="center">
+                      <AccessTimeIcon fontSize="small" sx={{ mr: 0.5 }} />
+                      {formatDateTime(session.ChargerSessionStart)}
+                    </Box>
+                  </TableCell>
+                  
+                  <TableCell>
+                    {session.ChargerSessionEnd ? formatDateTime(session.ChargerSessionEnd) : '-'}
+                  </TableCell>
+                  
+                  <TableCell>
+                    {formatDuration(session.ChargerSessionDuration)}
+                  </TableCell>
+                  
+                  <TableCell>
+                    <Box display="flex" alignItems="center">
+                      <BoltIcon fontSize="small" sx={{ mr: 0.5, color: 'warning.main' }} />
+                      {session.ChargerSessionEnergyKWH ? 
+                        `${session.ChargerSessionEnergyKWH.toFixed(2)} kWh` : 
+                        '-'
+                      }
+                    </Box>
+                  </TableCell>
+                  
+                  <TableCell>
+                    <Chip 
+                      label={session.ChargerSessionStatus || 'Unknown'} 
+                      color={getStatusColor(session.ChargerSessionStatus)}
+                      size="small"
+                    />
+                  </TableCell>
+                  
+                  <TableCell align="center">
+                    <IconButton 
+                      component={Link} 
+                      to={`/sessions/${session.ChargeSessionId}`}
+                      aria-label="view session details"
+                      color="primary"
+                      size="small"
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </CardContent>
+    </Card>
   );
 };
 

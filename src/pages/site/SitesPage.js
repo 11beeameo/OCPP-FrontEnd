@@ -22,7 +22,11 @@ import {
   Select,
   MenuItem,
   TextField,
-  InputAdornment
+  InputAdornment,
+  Paper,
+  styled,
+  Stack,
+  Tooltip
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
@@ -36,6 +40,14 @@ import { getSites, deleteSite, getCompanySites } from '../../api/siteAPI';
 import { getCompanies } from '../../api/companyAPI';
 import LoadingSpinner from '../../components/common/Loadingspinner';
 import ErrorAlert from '../../components/common/ErrorAlert';
+
+// Create a styled Card to ensure consistent sizes
+const SiteCard = styled(Card)(({ theme }) => ({
+  height: 280,
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+}));
 
 const SitesPage = () => {
   const queryClient = useQueryClient();
@@ -111,15 +123,15 @@ const SitesPage = () => {
     }
   });
 
-  const handleDeleteClick = (siteId) => {
-    setSiteToDelete(siteId);
+  const handleDeleteClick = (siteId, siteName) => {
+    setSiteToDelete({id: siteId, name: siteName});
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
     if (siteToDelete) {
       try {
-        await deleteMutation.mutateAsync(siteToDelete);
+        await deleteMutation.mutateAsync(siteToDelete.id);
       } catch (err) {
         // Error is handled by the mutation
       }
@@ -166,6 +178,16 @@ const SitesPage = () => {
   const currentCompany = companies?.find(company => company.CompanyId.toString() === filters.companyId);
   const currentCompanyName = currentCompany?.CompanyName || "Unknown Company";
 
+  // Common MenuProps for all dropdowns to ensure consistent size
+  const menuProps = {
+    PaperProps: {
+      style: {
+        maxHeight: 300,
+        width: 300,
+      },
+    },
+  };
+
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
@@ -180,9 +202,9 @@ const SitesPage = () => {
         </Button>
       </Box>
 
-      {/* Filters - with equal-sized filter boxes */}
-      <Box mb={4} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-        <Grid container spacing={2} alignItems="center">
+      {/* Filters - with fixed, consistent widths */}
+      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+        <Grid container spacing={3} alignItems="center">
           <Grid item xs={12} md={4}>
             <TextField
               name="search"
@@ -198,11 +220,11 @@ const SitesPage = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{ height: '100%' }}
+              size="medium"
             />
           </Grid>
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth sx={{ height: '100%' }}>
+            <FormControl fullWidth>
               <InputLabel id="company-filter-label">Company</InputLabel>
               <Select
                 labelId="company-filter-label"
@@ -215,8 +237,8 @@ const SitesPage = () => {
                     <BusinessIcon />
                   </InputAdornment>
                 }
+                MenuProps={menuProps}
               >
-                {/* No "All Companies" option as requested */}
                 {!isLoadingCompanies && companies && companies.map((company) => (
                   <MenuItem key={company.CompanyId} value={company.CompanyId.toString()}>
                     {company.CompanyName}
@@ -226,7 +248,8 @@ const SitesPage = () => {
             </FormControl>
           </Grid>
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth sx={{ height: '100%' }}>
+            {/* This is the Status dropdown - keeping the original height but making it wider */}
+            <FormControl fullWidth>
               <InputLabel id="status-filter-label">Status</InputLabel>
               <Select
                 labelId="status-filter-label"
@@ -234,6 +257,10 @@ const SitesPage = () => {
                 value={filters.enabled}
                 label="Status"
                 onChange={handleFilterChange}
+                MenuProps={menuProps}
+                sx={{
+                  minWidth: 200, // Ensure minimum width to display "All Statuses"
+                }}
               >
                 <MenuItem value="">All Statuses</MenuItem>
                 <MenuItem value="true">Active</MenuItem>
@@ -242,7 +269,7 @@ const SitesPage = () => {
             </FormControl>
           </Grid>
         </Grid>
-      </Box>
+      </Paper>
 
       {/* Company information display */}
       <Box mb={3}>
@@ -267,17 +294,33 @@ const SitesPage = () => {
           </Button>
         </Box>
       ) : (
-        <Grid container spacing={3}>
+        // This Grid container will force all its children to have the same width
+        <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
           {filteredSites && filteredSites.map((site) => {
             // Find company name for this site
             const company = companies?.find(c => c.CompanyId === site.SiteCompanyID);
             
             return (
-              <Grid item xs={12} md={6} lg={4} key={site.SiteId}>
-                <Card>
-                  <CardContent>
+              <Box key={site.SiteId} sx={{ 
+                width: '33.33%', 
+                padding: 1.5,
+                boxSizing: 'border-box',
+                '@media (max-width: 960px)': {
+                  width: '50%',
+                },
+                '@media (max-width: 600px)': {
+                  width: '100%',
+                },
+              }}>
+                <SiteCard>
+                  <CardContent sx={{ 
+                    flexGrow: 1, 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    p: 3,
+                  }}>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                      <Typography variant="h6">
+                      <Typography variant="h6" noWrap>
                         {site.SiteName}
                       </Typography>
                       <Chip 
@@ -288,24 +331,24 @@ const SitesPage = () => {
                     </Box>
                     
                     {company && (
-                      <Box display="flex" alignItems="center" mb={1}>
+                      <Box display="flex" alignItems="center" mb={2}>
                         <BusinessIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" color="text.secondary" noWrap>
                           {company.CompanyName}
                         </Typography>
                       </Box>
                     )}
                     
                     {(site.SiteAddress || site.SiteCity || site.SiteRegion) && (
-                      <Box display="flex" alignItems="flex-start" mb={1}>
-                        <LocationOnIcon fontSize="small" sx={{ mr: 1, mt: 0.5, color: 'text.secondary' }} />
-                        <Box>
+                      <Box display="flex" alignItems="flex-start" mb={2}>
+                        <LocationOnIcon fontSize="small" sx={{ mr: 1, mt: 0.5, color: 'text.secondary', flexShrink: 0 }} />
+                        <Box sx={{ overflow: 'hidden' }}>
                           {site.SiteAddress && (
-                            <Typography variant="body2">
+                            <Typography variant="body2" noWrap>
                               {site.SiteAddress}
                             </Typography>
                           )}
-                          <Typography variant="body2">
+                          <Typography variant="body2" noWrap>
                             {[site.SiteCity, site.SiteRegion, site.SiteCountry]
                               .filter(Boolean)
                               .join(', ')}
@@ -314,37 +357,57 @@ const SitesPage = () => {
                       </Box>
                     )}
                     
-                    <Box display="flex" justifyContent="flex-end" mt={2}>
-                      <IconButton 
-                        component={Link} 
-                        to={`/sites/${site.SiteId}`}
-                        aria-label="view"
-                        color="primary"
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                      <IconButton 
-                        component={Link} 
-                        to={`/sites/${site.SiteId}/edit`}
-                        aria-label="edit"
-                        color="primary"
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton 
-                        aria-label="delete"
-                        color="error"
-                        onClick={() => handleDeleteClick(site.SiteId)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                    {/* This spacer pushes the action buttons to the bottom */}
+                    <Box sx={{ flexGrow: 1 }} />
+                    
+                    {/* Updated action buttons with text labels like in the companies page */}
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 1 }}>
+                      <Stack direction="row" spacing={1}>
+                        <Tooltip title="View Site Details">
+                          <Button
+                            component={Link}
+                            to={`/sites/${site.SiteId}`}
+                            variant="outlined"
+                            color="primary"
+                            startIcon={<VisibilityIcon />}
+                            size="small"
+                          >
+                            View
+                          </Button>
+                        </Tooltip>
+                        
+                        <Tooltip title="Edit Site">
+                          <Button
+                            component={Link}
+                            to={`/sites/${site.SiteId}/edit`}
+                            variant="outlined"
+                            color="info"
+                            startIcon={<EditIcon />}
+                            size="small"
+                          >
+                            Edit
+                          </Button>
+                        </Tooltip>
+                        
+                        <Tooltip title="Delete Site">
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            startIcon={<DeleteIcon />}
+                            onClick={() => handleDeleteClick(site.SiteId, site.SiteName)}
+                            size="small"
+                          >
+                            Delete
+                          </Button>
+                        </Tooltip>
+                      </Stack>
                     </Box>
                   </CardContent>
-                </Card>
-              </Grid>
+                </SiteCard>
+              </Box>
             );
           })}
-        </Grid>
+        </Box>
       )}
 
       {/* Delete Confirmation Dialog */}
@@ -355,7 +418,7 @@ const SitesPage = () => {
         <DialogTitle>Delete Site</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this site? This action cannot be undone.
+            Are you sure you want to delete "{siteToDelete?.name}"? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

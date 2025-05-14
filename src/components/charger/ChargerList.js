@@ -9,7 +9,10 @@ import {
   Chip, 
   IconButton,
   Button,
-  Divider
+  Divider,
+  Stack,
+  Tooltip,
+  styled
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
@@ -21,6 +24,14 @@ import SignalWifi4BarIcon from '@mui/icons-material/SignalWifi4Bar';
 import SignalWifiOffIcon from '@mui/icons-material/SignalWifiOff';
 import LoadingSpinner from '../common/Loadingspinner';
 import ErrorAlert from '../common/ErrorAlert';
+
+// Create a styled Card to ensure consistent sizes
+const ChargerCard = styled(Card)(({ theme }) => ({
+  height: 280, // Fixed height for all cards
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+}));
 
 const ChargerList = ({ 
   chargers, 
@@ -70,15 +81,30 @@ const ChargerList = ({
           </Button>
         </Box>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
           {chargers && chargers.map((charger) => (
-            <Grid item xs={12} md={6} lg={4} key={charger.ChargerId}>
-              <Card>
-                <CardContent>
+            <Box key={charger.ChargerId} sx={{ 
+              width: '33.33%', 
+              padding: 1.5,
+              boxSizing: 'border-box',
+              '@media (max-width: 960px)': {
+                width: '50%',
+              },
+              '@media (max-width: 600px)': {
+                width: '100%',
+              },
+            }}>
+              <ChargerCard>
+                <CardContent sx={{ 
+                  flexGrow: 1, 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  p: 3,
+                }}>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                     <Box display="flex" alignItems="center">
                       <EvStationIcon sx={{ mr: 1 }} />
-                      <Typography variant="h6">
+                      <Typography variant="h6" noWrap>
                         {charger.ChargerName}
                       </Typography>
                     </Box>
@@ -114,42 +140,62 @@ const ChargerList = ({
                     )}
                   </Box>
                   
-                  <Divider sx={{ my: 1.5 }} />
-                  
                   <Typography variant="body2" color="text.secondary" gutterBottom>
                     ID: {charger.ChargerId}
                   </Typography>
                   
-                  <Box display="flex" justifyContent="flex-end" mt={2}>
-                    <IconButton 
-                      component={Link} 
-                      to={`/chargers/${charger.ChargerId}?company=${companyId}&site=${siteId}`}
-                      aria-label="view"
-                      color="primary"
-                    >
-                      <VisibilityIcon />
-                    </IconButton>
-                    <IconButton 
-                      component={Link} 
-                      to={`/chargers/${charger.ChargerId}/edit?company=${companyId}&site=${siteId}`}
-                      aria-label="edit"
-                      color="primary"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton 
-                      aria-label="delete"
-                      color="error"
-                      onClick={() => onDeleteClick && onDeleteClick(charger.ChargerId, companyId, siteId)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                  {/* This spacer pushes the action buttons to the bottom */}
+                  <Box sx={{ flexGrow: 1 }} />
+                  
+                  <Divider sx={{ my: 1.5 }} />
+                  
+                  {/* Updated action buttons with text labels */}
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 1 }}>
+                    <Stack direction="row" spacing={1}>
+                      <Tooltip title="View Charger Details">
+                        <Button
+                          component={Link}
+                          to={`/chargers/${charger.ChargerId}?company=${companyId}&site=${siteId}`}
+                          variant="outlined"
+                          color="primary"
+                          startIcon={<VisibilityIcon />}
+                          size="small"
+                        >
+                          View
+                        </Button>
+                      </Tooltip>
+                      
+                      <Tooltip title="Edit Charger">
+                        <Button
+                          component={Link}
+                          to={`/chargers/${charger.ChargerId}/edit?company=${companyId}&site=${siteId}`}
+                          variant="outlined"
+                          color="info"
+                          startIcon={<EditIcon />}
+                          size="small"
+                        >
+                          Edit
+                        </Button>
+                      </Tooltip>
+                      
+                      <Tooltip title="Delete Charger">
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          startIcon={<DeleteIcon />}
+                          onClick={() => onDeleteClick && onDeleteClick(charger.ChargerId, companyId, siteId)}
+                          size="small"
+                        >
+                          Delete
+                        </Button>
+                      </Tooltip>
+                    </Stack>
                   </Box>
                 </CardContent>
-              </Card>
-            </Grid>
+              </ChargerCard>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
     </Box>
   );

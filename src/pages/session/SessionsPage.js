@@ -1,4 +1,4 @@
-// src/pages/session/SessionsPage.js
+// src/pages/session/SessionsPage.js - Fixed Status dropdown text overlap
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
@@ -12,7 +12,8 @@ import {
   Select,
   MenuItem,
   TextField,
-  InputAdornment
+  InputAdornment,
+  styled
 } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -27,6 +28,25 @@ import { getCompanies } from '../../api/companyAPI';
 import { getSites } from '../../api/siteAPI';
 import { getChargers } from '../../api/chargerAPI';
 import SessionList from '../../components/session/SessionList';
+
+// Styled components for consistent sizing
+const StyledFormControl = styled(FormControl)(({ theme }) => ({
+  minHeight: 80, // Ensure enough height for the label and content
+  width: '100%',
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  minHeight: 80, // Match the height of the FormControl
+  width: '100%',
+}));
+
+// Styled Select with appropriate display width
+const StyledSelect = styled(Select)(({ theme }) => ({
+  width: '100%',
+  '& .MuiSelect-select': {
+    paddingRight: theme.spacing(4), // Space for the dropdown icon
+  }
+}));
 
 const SessionsPage = () => {
   const [filters, setFilters] = useState({
@@ -123,14 +143,33 @@ const SessionsPage = () => {
     });
   };
 
-  // Common props for all select components
+  // Menu props that match the width of the select without being oversized
   const menuProps = {
+    // Just use default width to match parent
     PaperProps: {
       style: {
         maxHeight: 300,
-        width: 300,
       },
     },
+    // This makes the menu match the width of the Select component
+    anchorOrigin: {
+      vertical: 'bottom',
+      horizontal: 'left',
+    },
+    transformOrigin: {
+      vertical: 'top',
+      horizontal: 'left',
+    },
+    // Disable auto width which can cause larger-than-parent width menus
+    MenuListProps: {
+      disableAutoFocusItem: true,
+      style: { paddingTop: 0, paddingBottom: 0 }
+    },
+  };
+
+  // Common style for input fields to ensure consistency
+  const inputStyle = {
+    height: 56, // Standard Material UI input height
   };
 
   return (
@@ -146,7 +185,7 @@ const SessionsPage = () => {
         </Button>
       </Box>
 
-      {/* Filters Panel */}
+      {/* Filters Panel - Fixed Status dropdown */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box display="flex" alignItems="center" mb={2}>
           <FilterListIcon sx={{ mr: 1 }} />
@@ -157,188 +196,217 @@ const SessionsPage = () => {
           </Button>
         </Box>
         
-        <Grid container spacing={2}>
-          {/* ROW 1: First 4 filters */}
-          <Grid item xs={12} sm={6} md={3}>
-            {/* Company Filter */}
-            <FormControl fullWidth>
-              <InputLabel id="company-filter-label">Company</InputLabel>
-              <Select
-                labelId="company-filter-label"
-                name="companyId"
-                value={filters.companyId}
-                label="Company"
-                onChange={handleFilterChange}
-                MenuProps={menuProps}
-                startAdornment={
-                  <InputAdornment position="start">
-                    <BusinessIcon fontSize="small" />
-                  </InputAdornment>
-                }
-              >
-                <MenuItem value="">All Companies</MenuItem>
-                {!isLoadingCompanies && companies && companies.map((company) => (
-                  <MenuItem key={company.CompanyId} value={company.CompanyId.toString()}>
-                    {company.CompanyName}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+        <Grid container spacing={3}>
+          {/* First Column */}
+          <Grid item xs={12} md={6}>
+            <Grid container spacing={3}>
+              {/* Company Filter */}
+              <Grid item xs={12}>
+                <StyledFormControl>
+                  <InputLabel id="company-filter-label">Company</InputLabel>
+                  <StyledSelect
+                    labelId="company-filter-label"
+                    name="companyId"
+                    value={filters.companyId}
+                    label="Company"
+                    onChange={handleFilterChange}
+                    MenuProps={menuProps}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <BusinessIcon fontSize="small" />
+                      </InputAdornment>
+                    }
+                    sx={inputStyle}
+                    displayEmpty
+                  >
+                    <MenuItem value="" style={{ minWidth: '100%' }}>All Companies</MenuItem>
+                    {!isLoadingCompanies && companies && companies.map((company) => (
+                      <MenuItem key={company.CompanyId} value={company.CompanyId.toString()} style={{ minWidth: '100%' }}>
+                        {company.CompanyName}
+                      </MenuItem>
+                    ))}
+                  </StyledSelect>
+                </StyledFormControl>
+              </Grid>
+              
+              {/* Site Filter */}
+              <Grid item xs={12}>
+                <StyledFormControl>
+                  <InputLabel id="site-filter-label">Site</InputLabel>
+                  <StyledSelect
+                    labelId="site-filter-label"
+                    name="siteId"
+                    value={filters.siteId}
+                    label="Site"
+                    onChange={handleFilterChange}
+                    disabled={!filters.companyId}
+                    MenuProps={menuProps}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <LocationOnIcon fontSize="small" />
+                      </InputAdornment>
+                    }
+                    sx={inputStyle}
+                    displayEmpty
+                  >
+                    <MenuItem value="" style={{ minWidth: '100%' }}>All Sites</MenuItem>
+                    {!isLoadingSites && sites && sites.map((site) => (
+                      <MenuItem key={site.SiteId} value={site.SiteId.toString()} style={{ minWidth: '100%' }}>
+                        {site.SiteName}
+                      </MenuItem>
+                    ))}
+                  </StyledSelect>
+                </StyledFormControl>
+              </Grid>
+              
+              {/* Charger Filter */}
+              <Grid item xs={12}>
+                <StyledFormControl>
+                  <InputLabel id="charger-filter-label">Charger</InputLabel>
+                  <StyledSelect
+                    labelId="charger-filter-label"
+                    name="chargerId"
+                    value={filters.chargerId}
+                    label="Charger"
+                    onChange={handleFilterChange}
+                    disabled={!filters.companyId}
+                    MenuProps={menuProps}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <EvStationIcon fontSize="small" />
+                      </InputAdornment>
+                    }
+                    sx={inputStyle}
+                    displayEmpty
+                  >
+                    <MenuItem value="" style={{ minWidth: '100%' }}>All Chargers</MenuItem>
+                    {!isLoadingChargers && chargers && chargers.map((charger) => (
+                      <MenuItem key={charger.ChargerId} value={charger.ChargerId.toString()} style={{ minWidth: '100%' }}>
+                        {charger.ChargerName} (#{charger.ChargerId})
+                      </MenuItem>
+                    ))}
+                  </StyledSelect>
+                </StyledFormControl>
+              </Grid>
+              
+              {/* Status Filter - Fixed to prevent text overlap */}
+              <Grid item xs={12}>
+                <StyledFormControl>
+                  <InputLabel id="status-filter-label">Status</InputLabel>
+                  <StyledSelect
+                    labelId="status-filter-label"
+                    name="status"
+                    value={filters.status}
+                    label="Status"
+                    onChange={handleFilterChange}
+                    MenuProps={menuProps}
+                    sx={{
+                      ...inputStyle,
+                      // This ensures text doesn't overlap with the dropdown arrow
+                      '& .MuiSelect-select': {
+                        paddingRight: '32px !important', // Force enough padding for dropdown icon
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }
+                    }}
+                    displayEmpty
+                  >
+                    <MenuItem value="" style={{ minWidth: '100%' }}>All Statuses</MenuItem>
+                    <MenuItem value="Started" style={{ minWidth: '100%' }}>Started</MenuItem>
+                    <MenuItem value="Completed" style={{ minWidth: '100%' }}>Completed</MenuItem>
+                    <MenuItem value="Failed" style={{ minWidth: '100%' }}>Failed</MenuItem>
+                  </StyledSelect>
+                </StyledFormControl>
+              </Grid>
+            </Grid>
           </Grid>
           
-          <Grid item xs={12} sm={6} md={3}>
-            {/* Site Filter */}
-            <FormControl fullWidth>
-              <InputLabel id="site-filter-label">Site</InputLabel>
-              <Select
-                labelId="site-filter-label"
-                name="siteId"
-                value={filters.siteId}
-                label="Site"
-                onChange={handleFilterChange}
-                disabled={!filters.companyId}
-                MenuProps={menuProps}
-                startAdornment={
-                  <InputAdornment position="start">
-                    <LocationOnIcon fontSize="small" />
-                  </InputAdornment>
-                }
-              >
-                <MenuItem value="">All Sites</MenuItem>
-                {!isLoadingSites && sites && sites.map((site) => (
-                  <MenuItem key={site.SiteId} value={site.SiteId.toString()}>
-                    {site.SiteName}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            {/* Charger Filter */}
-            <FormControl fullWidth>
-              <InputLabel id="charger-filter-label">Charger</InputLabel>
-              <Select
-                labelId="charger-filter-label"
-                name="chargerId"
-                value={filters.chargerId}
-                label="Charger"
-                onChange={handleFilterChange}
-                disabled={!filters.companyId}
-                MenuProps={menuProps}
-                startAdornment={
-                  <InputAdornment position="start">
-                    <EvStationIcon fontSize="small" />
-                  </InputAdornment>
-                }
-              >
-                <MenuItem value="">All Chargers</MenuItem>
-                {!isLoadingChargers && chargers && chargers.map((charger) => (
-                  <MenuItem key={charger.ChargerId} value={charger.ChargerId.toString()}>
-                    {charger.ChargerName} (#{charger.ChargerId})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            {/* Status Filter */}
-            <FormControl fullWidth>
-              <InputLabel id="status-filter-label">Status</InputLabel>
-              <Select
-                labelId="status-filter-label"
-                name="status"
-                value={filters.status}
-                label="Status"
-                onChange={handleFilterChange}
-                MenuProps={menuProps}
-              >
-                <MenuItem value="">All Statuses</MenuItem>
-                <MenuItem value="Started">Started</MenuItem>
-                <MenuItem value="Completed">Completed</MenuItem>
-                <MenuItem value="Failed">Failed</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          
-          {/* ROW 2: Next 4 filters */}
-          <Grid item xs={12} sm={6} md={3}>
-            {/* Driver ID Filter */}
-            <TextField
-              name="driverId"
-              label="Driver ID"
-              fullWidth
-              value={filters.driverId}
-              onChange={handleFilterChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PersonIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            {/* RFID Card Filter */}
-            <TextField
-              name="rfidCard"
-              label="RFID Card"
-              fullWidth
-              value={filters.rfidCard}
-              onChange={handleFilterChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <CreditCardIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            {/* Start Date Filter */}
-            <TextField
-              label="Start Date From"
-              type="datetime-local"
-              fullWidth
-              value={filters.startDate ? filters.startDate.toISOString().slice(0, 16) : ''}
-              onChange={(e) => handleDateChange('startDate', e.target.value ? new Date(e.target.value) : null)}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <CalendarMonthIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            {/* End Date Filter */}
-            <TextField
-              label="Start Date To"
-              type="datetime-local"
-              fullWidth
-              value={filters.endDate ? filters.endDate.toISOString().slice(0, 16) : ''}
-              onChange={(e) => handleDateChange('endDate', e.target.value ? new Date(e.target.value) : null)}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <CalendarMonthIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              }}
-            />
+          {/* Second Column */}
+          <Grid item xs={12} md={6}>
+            <Grid container spacing={3}>
+              {/* Driver ID Filter */}
+              <Grid item xs={12}>
+                <StyledTextField
+                  name="driverId"
+                  label="Driver ID"
+                  value={filters.driverId}
+                  onChange={handleFilterChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PersonIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                    style: inputStyle
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              
+              {/* RFID Card Filter */}
+              <Grid item xs={12}>
+                <StyledTextField
+                  name="rfidCard"
+                  label="RFID Card"
+                  value={filters.rfidCard}
+                  onChange={handleFilterChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CreditCardIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                    style: inputStyle
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              
+              {/* Start Date Filter */}
+              <Grid item xs={12}>
+                <StyledTextField
+                  label="Start Date From"
+                  type="datetime-local"
+                  value={filters.startDate ? filters.startDate.toISOString().slice(0, 16) : ''}
+                  onChange={(e) => handleDateChange('startDate', e.target.value ? new Date(e.target.value) : null)}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CalendarMonthIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                    style: inputStyle
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              
+              {/* End Date Filter */}
+              <Grid item xs={12}>
+                <StyledTextField
+                  label="Start Date To"
+                  type="datetime-local"
+                  value={filters.endDate ? filters.endDate.toISOString().slice(0, 16) : ''}
+                  onChange={(e) => handleDateChange('endDate', e.target.value ? new Date(e.target.value) : null)}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CalendarMonthIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                    style: inputStyle
+                  }}
+                  fullWidth
+                />
+              </Grid>
+            </Grid>
           </Grid>
         </Grid>
       </Paper>

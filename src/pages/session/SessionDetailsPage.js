@@ -1,4 +1,4 @@
-// Complete SessionDetailsPage.js with only energy plot
+// Modified SessionDetailsPage.js with metadata section moved above the energy graph
 import React from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -292,36 +292,8 @@ const SessionDetailsPage = () => {
         </Grid>
       </Paper>
 
-      {/* Energy Chart (Power removed) */}
-      {chartData.length > 0 && (
-        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-          <Box display="flex" alignItems="center" mb={2}>
-            <TimelineIcon sx={{ mr: 1 }} />
-            <Typography variant="h6">Session Energy Timeline</Typography>
-          </Box>
-          
-          <Box sx={{ width: '100%', height: 400 }}>
-            <ResponsiveContainer>
-              <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" />
-                <YAxis />
-                <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="energy" 
-                  stroke="#16a34a" 
-                  name="Energy (kWh)" 
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </Box>
-        </Paper>
-      )}
-
-      {/* Metadata */}
-      <Paper elevation={2} sx={{ p: 3 }}>
+      {/* Metadata section - MOVED HERE */}
+      <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
         <Typography variant="h6" gutterBottom>Session Metadata</Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} md={4}>
@@ -348,6 +320,34 @@ const SessionDetailsPage = () => {
           )}
         </Grid>
       </Paper>
+
+      {/* Energy Chart (only if there's data) */}
+      {chartData.length > 0 && (
+        <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+          <Box display="flex" alignItems="center" mb={2}>
+            <TimelineIcon sx={{ mr: 1 }} />
+            <Typography variant="h6">Session Energy Timeline</Typography>
+          </Box>
+          
+          <Box sx={{ width: '100%', height: 400 }}>
+            <ResponsiveContainer>
+              <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" />
+                <YAxis />
+                <Tooltip />
+                <Line 
+                  type="monotone" 
+                  dataKey="energy" 
+                  stroke="#16a34a" 
+                  name="Energy (kWh)" 
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
+        </Paper>
+      )}
     </Box>
   );
 };
